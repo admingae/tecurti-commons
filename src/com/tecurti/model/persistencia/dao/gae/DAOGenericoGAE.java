@@ -280,6 +280,16 @@ public abstract class DAOGenericoGAE<T extends EntityGae, AtributosDaClasse> {
 	return delete(key, null, null);
     }
     
+    public Key deleteByKey(String keyAsString, DatastoreService datastore, Transaction txn) throws Exception {
+	Key key;
+	try {
+	    key = KeyFactory.stringToKey(keyAsString);
+	} catch (Exception e) {
+	    return null;
+	}
+	return delete(key, datastore, txn);
+    }
+    
     public Key delete(final Key key, DatastoreService datastore, Transaction txn) throws Exception {
 
 	if (datastore != null) {

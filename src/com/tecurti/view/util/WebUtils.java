@@ -45,6 +45,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.Transform;
+import com.tecurti.model.entidades.Dimension;
 import com.tecurti.model.utils.ModelUtils;
 
 import flexjson.JSONDeserializer;
@@ -419,32 +423,28 @@ public class WebUtils {
 	return new HashCodeBuilder().append(bytes).toHashCode();
     }
 
-    public static int setHeaderAtributosParaCache(HttpServletRequest request, HttpServletResponse response, byte[] bytes, int tempoEmSegundosCache, boolean isHabilitarCache) {
-	return setDadosParaCache(request, response, tempoEmSegundosCache, gerarEtag(bytes), isHabilitarCache);
+    public static int setHeaderAtributosParaCache(HttpServletRequest request, HttpServletResponse response, byte[] bytes, int tempoEmSegundosCache) {
+	return setDadosParaCache(request, response, tempoEmSegundosCache, gerarEtag(bytes));
     }
     
     private static int TEMPO_EM_SEGUNDOS_CACHE_ETERNO = 60 * 60 * 24 * 365 * 15; 
-    public static int setHeaderAtributosParaCacheEterno(HttpServletRequest request, HttpServletResponse response, boolean isHabilitarCache) {
-	return setDadosParaCache(request, response, TEMPO_EM_SEGUNDOS_CACHE_ETERNO, 1, isHabilitarCache);
+    public static int setHeaderAtributosParaCacheEterno(HttpServletRequest request, HttpServletResponse response) {
+	return setDadosParaCache(request, response, TEMPO_EM_SEGUNDOS_CACHE_ETERNO, 1);
     }
 
-    public static int setDadosParaCache(HttpServletRequest request, HttpServletResponse response, int tempoEmSegundosCache, int eTag, boolean isHabilitarCache) {
-	
-	if (isHabilitarCache) {
-	    String etagResponse = "\""+eTag+"\"";
-	    response.setHeader("ETag", etagResponse);
-	    response.setHeader("Vary", "Accept-Encoding");
-	    response.setHeader("Connection", "keep-alive");
-	    response.setHeader("Cache-Control", "public, max-age=" + tempoEmSegundosCache);
-	    
-	    // ----------------
-	    String headerEtagRequest = request.getHeader("If-None-Match");
-	    if (etagResponse.equals(headerEtagRequest)) {
-		response.setStatus(STATUS_RESPONSE_NOT_MODIFIED);
-		return STATUS_RESPONSE_NOT_MODIFIED;
-	    } else {
-		return STATUS_RESPONSE_NORMAL;
-	    }
+    public static int setDadosParaCache(HttpServletRequest request, HttpServletResponse response, int tempoEmSegundosCache, int eTag) {
+
+	String etagResponse = "\""+eTag+"\"";
+	response.setHeader("ETag", etagResponse);
+	response.setHeader("Vary", "Accept-Encoding");
+	response.setHeader("Connection", "keep-alive");
+	response.setHeader("Cache-Control", "public, max-age=" + tempoEmSegundosCache);
+
+	// ----------------
+	String headerEtagRequest = request.getHeader("If-None-Match");
+	if (etagResponse.equals(headerEtagRequest)) {
+	    response.setStatus(STATUS_RESPONSE_NOT_MODIFIED);
+	    return STATUS_RESPONSE_NOT_MODIFIED;
 	} else {
 	    return STATUS_RESPONSE_NORMAL;
 	}
@@ -1161,6 +1161,27 @@ public class WebUtils {
 	return url.toString();
     }
     
+    public static byte[] redimensionarImagem(byte[] bytes, Dimension dimension) {
+	
+	Image imagemOriginal = ImagesServiceFactory.makeImage(bytes);
+	
+	Transform resized = ImagesServiceFactory.makeResize(dimension.getWidth(), dimension.getHeight());
+	Image newImage = ImagesServiceFactory.getImagesService().applyTransform(resized, imagemOriginal);
+	byte[] newImageData = newImage.getImageData();
+	return newImageData;
+    }
+    
+    public static boolean isArquivoAnexoDoTipo(String nomeArquivo, String... tiposAceitos) {
+	
+	String contentTypeUpper = nomeArquivo.toUpperCase();
+	for (String tipo : tiposAceitos) {
+	    if (contentTypeUpper.endsWith("."+tipo.toUpperCase())) {
+		return true;
+	    }
+	}
+	
+	return false;
+    }
 }
 
 

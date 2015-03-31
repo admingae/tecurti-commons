@@ -42,16 +42,16 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	}
     }
 
-    public void saveOrUpdate(final T objeto) throws Exception {
+    public void insertOrUpdate(final T objeto) throws Exception {
 	executeTransaction(new HibernateSessionCommand() { @Override public void execute(Session session, Transaction transaction) {
 	    session.saveOrUpdate(objeto);
 	}});
     }
     
-    public <I>I save(final T objeto) throws Exception {
-	 return save(objeto, null);
+    public <I>I insert(final T objeto) throws Exception {
+	 return insert(objeto, null);
     }
-    public <I>I save(final T objeto, Session session) throws Exception {
+    public <I>I insert(final T objeto, Session session) throws Exception {
 	if (session == null) {
 	    executeTransaction(new HibernateSessionCommand() { @Override public I executeComRetorno(Session sess, Transaction transaction) {
 		return doSave(objeto, sess);
