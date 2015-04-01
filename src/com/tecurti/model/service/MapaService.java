@@ -28,7 +28,13 @@ public class MapaService {
 	return todosPaises;
     }
     
+    public static Pais findPais(Integer idPais) {
+	return idPais == null ? null : findPais(idPais.longValue());
+    }
     public static Pais findPais(Long idPais) {
+	if (idPais == null) {
+	    return null;
+	}
 	if (PAIS_OUTRO.getId().equals(idPais)) {
 	    return PAIS_OUTRO;
 	}

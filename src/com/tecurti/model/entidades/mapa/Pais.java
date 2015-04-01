@@ -28,6 +28,9 @@ public class Pais {
 	this.tokenMaps = tokenMaps;
     }
     
+    public Estado findEstado(Integer idEstado) {
+	return idEstado == null ? null : findEstado(idEstado.longValue());
+    }
     public Estado findEstado(Long idEstado) {
 	for (Estado estado : listEstados) {
 	    if (estado.getId().equals(idEstado)) {

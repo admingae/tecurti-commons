@@ -44,6 +44,13 @@ public class ModelUtils {
 	return calcularTempoEntreDatas(dataDoEvento, dataAgora);
     }
 
+    public static void removerElementosNull(List list) {
+	for (int i = list.size() - 1; i >= 0; i--) {
+	    if (list.get(i) == null) {
+		list.remove(i);
+	    }
+	}
+    }
     public static Tempo calcularTempoEntreDatas(Calendar dataInicio, Calendar dataFim) {
 
 	Date dataIniciaoAsDate = dataInicio.getTime();
