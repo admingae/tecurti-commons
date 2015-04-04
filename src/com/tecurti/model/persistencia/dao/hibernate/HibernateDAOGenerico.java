@@ -53,7 +53,7 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
     public <I>I insert(final T objeto, Session session) throws Exception {
 	if (session == null) {
-	    executeTransaction(new HibernateSessionCommand() { @Override public I executeComRetorno(Session sess, Transaction transaction) {
+	    executeTransaction(new HibernateSessionCommand<Object>() { @Override public I executeComRetorno(Session sess, Transaction transaction) {
 		return doSave(objeto, sess);
 	    }});
 	} else {
