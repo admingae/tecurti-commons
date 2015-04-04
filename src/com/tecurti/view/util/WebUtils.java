@@ -68,6 +68,7 @@ public class WebUtils {
 
     public static JSONSerializer jsonSerializer = new JSONSerializer().exclude(/*"class", "key", "parentKey"*/);
     public static JSONDeserializer<Map<String, Object>> mapJsonDeserializer = new JSONDeserializer<>();
+    public static JSONDeserializer<List<Map<String, Object>>> listMapJsonDeserializer = new JSONDeserializer<>();
     
     public static String lastModifiedParaCache = criarHttpDateFormat().format(new GregorianCalendar(2000, 1, 1).getTime());
     public static String expires = criarHttpDateFormat().format(createDataExpires());
