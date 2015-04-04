@@ -23,14 +23,14 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return (Class<T>) ((ParameterizedType) directSubclass.getGenericSuperclass()).getActualTypeArguments()[0];
     }
     
-    public static Object executeTransaction(HibernateSessionCommand command) throws Exception {
+    public static <T> T executeTransaction(HibernateSessionCommand<T> command) throws Exception {
 	
 	Session session = HibernateUtil.getSession();
 	Transaction transaction = session.beginTransaction();
 	
 	try {
 	    command.execute(session, transaction);
-	    Object retorno = command.executeComRetorno(session, transaction);
+	    T retorno = command.executeComRetorno(session, transaction);
 	    transaction.commit();
 	    
 	    return retorno;
@@ -67,15 +67,40 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
     
     public void update(final T objeto) throws Exception {
-	executeTransaction(new HibernateSessionCommand() { @Override public void execute(Session session, Transaction transaction) {
-	    session.update(objeto);
-	}});
+	update(objeto, null);
+    }
+    public void update(final T objeto, Session session) throws Exception {
+	if (session == null) {
+	    executeTransaction(new HibernateSessionCommand<Object>() {
+		@Override public void execute(Session session, Transaction transaction) {
+		    doUpdate(objeto, session);
+		}
+	    });
+	} else {
+	     doUpdate(objeto, session);
+	}
+    }
+    private void doUpdate(final T objeto, Session session) {
+	session.update(objeto);
     }
     
     public void delete(final T objeto) throws Exception {
-	executeTransaction(new HibernateSessionCommand() { @Override public void execute(Session session, Transaction transaction) {
-	    session.delete(objeto);
-	}});
+	delete(objeto, null);
+    }
+    public void delete(final T objeto, Session session) throws Exception {
+	if (session == null) {
+	    executeTransaction(new HibernateSessionCommand<Object>() {
+		@Override public void execute(Session session, Transaction transaction) throws Exception {
+		    doDelete(objeto, session);
+		}
+	    });
+	} else {
+	    doDelete(objeto, session);
+	}
+    }
+
+    private void doDelete(final T objeto, Session session) throws Exception {
+	session.delete(objeto);
     }
     
     public void deleteById(final ID id) throws Exception {
