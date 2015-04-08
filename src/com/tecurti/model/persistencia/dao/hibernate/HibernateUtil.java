@@ -13,23 +13,23 @@ public class HibernateUtil {
 
     private static SessionFactory sessionFactory;
 
-    public static void generateTables() {
-	SchemaExport export = new SchemaExport(new Configuration().configure());
-	export.create(true, false);
+    public static void executeGenerateTables() {
+	SchemaExport export = new SchemaExport(ExtensionConfig.createHibernateConfiguration());
+	export.create(true, true);
     }
     
-    public static void generateTables(boolean script, boolean doUpdate)  {
-	SchemaExport export = new SchemaExport(new Configuration().configure());
+    public static void showLogGenerateTables(boolean script, boolean doUpdate)  {
+	SchemaExport export = new SchemaExport(ExtensionConfig.createHibernateConfiguration());
 	export.create(script, doUpdate);
     }
 
-    public static void updateTables() {
-	SchemaUpdate update = new SchemaUpdate(new Configuration().configure());
-	update.execute(true, false);
+    public static void executeUpdateTables() {
+	SchemaUpdate update = new SchemaUpdate(ExtensionConfig.createHibernateConfiguration());
+	update.execute(true, true);
     }
     
-    public static void updateTables(boolean script, boolean doUpdate)  {
-	SchemaUpdate update = new SchemaUpdate(new Configuration().configure());
+    public static void showLogUpdateTables(boolean script, boolean doUpdate)  {
+	SchemaUpdate update = new SchemaUpdate(ExtensionConfig.createHibernateConfiguration());
 	update.execute(script, doUpdate);
     }
 
@@ -47,7 +47,7 @@ public class HibernateUtil {
     }
 
     public static void initSessionFactory() {
-	Configuration configuration = new Configuration().configure();
+	Configuration configuration = ExtensionConfig.createHibernateConfiguration();
 	ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();        
 	sessionFactory = configuration.buildSessionFactory(serviceRegistry);
     }

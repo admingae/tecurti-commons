@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.reflect.Field;
@@ -1104,27 +1105,42 @@ public class WebUtils {
 	return links;
     }
     
-    public static String fazerChamadaWebservice(String url, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
+    public static enum HttpMethod {
+	GET, POST
+    }
+    
+    public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
 	
-        StringBuilder postData = new StringBuilder();
+        StringBuilder queryString = new StringBuilder();
         for (Map.Entry<String,Object> param : params.entrySet()) {
-            if (postData.length() != 0) postData.append('&');
-            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-            postData.append('=');
-            postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            if (queryString.length() != 0) queryString.append('&');
+            queryString.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+            queryString.append('=');
+            queryString.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
         }
-        byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+        byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
 
-        HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
-        conn.setRequestMethod("POST");
+        String urlFinal;
+        if (method == HttpMethod.POST) {
+            urlFinal = url;
+	} else {
+	    if (queryStringAsBytes.length == 0) {
+		urlFinal = url;
+	    } else {
+		urlFinal = url + "?" + new String(queryStringAsBytes);
+	    }
+	}
+        HttpURLConnection conn = (HttpURLConnection)new URL(urlFinal).openConnection();
+        conn.setRequestMethod(method.toString());
         conn.setConnectTimeout(50000);
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
         conn.setDoOutput(true);
-        conn.getOutputStream().write(postDataBytes);
+        if (method == HttpMethod.POST) {
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
+            conn.getOutputStream().write(queryStringAsBytes);
+	}
 
         Reader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-//	for (int c; (c = reader.read()) >= 0; System.out.print((char) c));
 	
 	byte[] bytesOriginalFromFacebook = IOUtils.toByteArray(reader);
 	return new String(bytesOriginalFromFacebook);

@@ -4,9 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -17,6 +20,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -29,6 +34,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.MapUtils;
 
 import com.tecurti.model.entidades.Tempo;
 import com.tecurti.model.entidades.UnidadeTempo;
@@ -52,6 +58,17 @@ public class ModelUtils {
 		list.remove(i);
 	    }
 	}
+    }
+    public static int converterValorMonetarioDeDecimalParaCentavos(BigDecimal valorEmDecimais) {
+	BigDecimal valorCom2CasasDecimais = valorEmDecimais.setScale(2, RoundingMode.HALF_UP);
+	BigDecimal valorCentavos = valorCom2CasasDecimais.multiply(new BigDecimal(100));
+	return valorCentavos.intValue();
+    }
+    public static void outprintMap(Map map) {
+	outprintMap("map", map);
+    }
+    public static void outprintMap(String nomeMap, Map map) {
+	MapUtils.debugPrint(System.out, nomeMap, map);
     }
     public static Tempo calcularTempoEntreDatas(Calendar dataInicio, Calendar dataFim) {
 
@@ -861,6 +878,34 @@ public class ModelUtils {
 	} catch (UnsupportedEncodingException e) {
 	    return null;
 	}
+    }
+    
+    public static String getPropertieFromResourceAsStream(String pathResource, String key) {
+
+	InputStream inputStream = null;
+	try {
+	    inputStream = ModelUtils.class.getResourceAsStream(pathResource);
+
+	    Properties properties = new Properties();
+	    properties.load(inputStream);
+
+	    return properties.get(key).toString().trim();
+	} catch (IOException e) {
+	    logger.log(Level.SEVERE, "", e);
+	    return null;
+	    // e.printStackTrace();
+	} finally {
+	    if (inputStream != null) {
+		try {
+		    inputStream.close();
+		} catch (IOException e) {
+		    logger.log(Level.SEVERE, "", e);
+		    // e.printStackTrace();
+		    throw new RuntimeException(e);
+		}
+	    }
+	}
+
     }
 }
 
