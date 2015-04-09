@@ -53,11 +53,17 @@ public class PagarMeService {
     }
     
     public static class RespostaEfetuarPagamentoNoCartaoCredito {
+	public boolean isErro;
 	public StatusTransacaoPagarMe status;
 	public Integer idTransacao;
 	
 	// Mensagem de resposta do adquirente referente ao status da transação.
 	public String mensagemReferenteAoStatus;
+
+	@Override
+	public String toString() {
+	    return "[status=" + status + ", idTransacao=" + idTransacao + ", mensagemReferenteAoStatus=" + mensagemReferenteAoStatus + "]";
+	}
     }
     
     public RespostaEfetuarPagamentoNoCartaoCredito efetuarPagamentoNoCartaoCredito(ParametrosEfetuarPagamentoNoCartaoCredito parametros) throws Exception {
