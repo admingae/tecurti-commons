@@ -8,7 +8,7 @@
 package com.tecurti.model.entidades;
 
 
-/**
+/** 
  * The <code>Dimension</code> class encapsulates the width and 
  * height of a component (in integer precision) in a single object. 
  * The class is 
