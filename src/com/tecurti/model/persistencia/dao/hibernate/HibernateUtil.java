@@ -39,10 +39,9 @@ public class HibernateUtil {
 
     public static SessionFactory getSessionFactory() {
 
-	/*if (sessionFactory == null) {
+	if (sessionFactory == null) {
 	    initSessionFactory();
-	}*/
-	initSessionFactory();
+	}
 
 	return sessionFactory;
     }

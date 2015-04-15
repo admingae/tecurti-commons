@@ -2,8 +2,10 @@ package com.tecurti.model.persistencia.dao.hibernate;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.Iterator;
 import java.util.List;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -26,16 +28,20 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     public static <T> T executeTransaction(HibernateSessionCommand<T> command) throws Exception {
 	
 	Session session = HibernateUtil.getSession();
-	Transaction transaction = session.beginTransaction();
+	Transaction transaction = null;
 	
 	try {
+	    transaction = session.beginTransaction();
+	    
 	    command.execute(session, transaction);
 	    T retorno = command.executeComRetorno(session, transaction);
 	    transaction.commit();
 	    
 	    return retorno;
 	} catch (Exception e) {
-	    transaction.rollback();
+	    if (transaction != null) {
+		transaction.rollback();
+	    }
 	    throw e;
 	} finally {
 	    session.close();
@@ -53,16 +59,16 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
     public <I>I insert(final T objeto, Session session) throws Exception {
 	if (session == null) {
-	    executeTransaction(new HibernateSessionCommand<Object>() { @Override public I executeComRetorno(Session sess, Transaction transaction) {
-		return doSave(objeto, sess);
+	    executeTransaction(new HibernateSessionCommand<Object>() { @Override public I executeComRetorno(Session session, Transaction transaction) {
+		return doInsert(objeto, session);
 	    }});
 	} else {
-	     return doSave(objeto, session);
+	     return doInsert(objeto, session);
 	}
 	return null;
     }
 
-    private <I>I doSave(final T objeto, Session session) {
+    private <I>I doInsert(final T objeto, Session session) {
 	return (I) session.save(objeto);
     }
     
@@ -112,23 +118,6 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	DAOGenericoParameter param = new DAOGenericoParameter("id", id);
 	executeHQL(session, hql, param);
     }
-    
-    /*public void executeSQL(String sql) {
-	
-	Session session = HibernateUtil.getSession();
-	Transaction transaction = session.beginTransaction();
-	
-	try {
-	    session.createSQLQuery(sql).executeUpdate();
-	    transaction.commit();
-	} catch (Exception e) {
-	    transaction.rollback();
-	    e.printStackTrace();
-	    throw new RuntimeException();
-	} finally {
-	    session.close();
-	}
-    }*/
     
     public void executeHQL(final String hql, final DAOGenericoParameter... parameters) throws Exception {
 	executeHQL(null, hql, parameters);
@@ -291,12 +280,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     public <DiferentType> List<DiferentType> executeQueryForDiferentType(final Session session, final Class<DiferentType> type, final String hql, final DAOGenericoParameter... parameters) throws Exception {
 	
 	if (session == null) {
-	    Object retorno = executeTransaction(new HibernateSessionCommand() {
+	    return executeTransaction(new HibernateSessionCommand<List<DiferentType>>() {
 		public List<DiferentType> executeComRetorno(Session sess, Transaction transaction) {
 		    return doExecuteQueryForDiferentType(sess, type, hql, parameters);
 		}
 	    });
-	    return (List<DiferentType>) retorno;
 	} else {
 	    return doExecuteQueryForDiferentType(session, type, hql, parameters);
 	}
@@ -313,14 +301,31 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return list;
     }
     
-    public T findById(ID id) {
+    
+    public T findById(final ID id) throws Exception {
+	return findById(id, null);
+    }
+    public T findById(final ID id, Session session) throws Exception {
 	if (id == null) {
 	    return null;
 	}
-	Session session = HibernateUtil.getSession();
-	T objectFinded = (T) session.get(getGenericsClass(), id);
-	session.close();
+	
+	// ----------------
+	if (session == null) {
+	    return executeTransaction(new HibernateSessionCommand<T>() {
+		@Override
+		public T executeComRetorno(Session session, Transaction transaction) {
+		    return doFindById(id, session);
+		}
 
+	    });
+	} else {
+	    return doFindById(id, session);
+	}
+    }
+    
+    private T doFindById(final ID id, Session session) {
+	T objectFinded = (T) session.get(getGenericsClass(), id);
 	return objectFinded;
     }
 
