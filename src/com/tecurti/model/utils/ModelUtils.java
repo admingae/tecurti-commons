@@ -468,21 +468,15 @@ public class ModelUtils {
     }
 
     public static Calendar getDataHoje() {
-	Calendar date = Calendar.getInstance();
+	return getDataHoje(null);
+    }
+    public static Calendar getDataHojeSaoPauloBrasil() {
+	return getDataHoje(GMT_SAO_PAULO);
+    }
+    public static Calendar getDataHoje(TimeZone timeZone) {
+	Calendar date = timeZone == null ? Calendar.getInstance() : Calendar.getInstance(timeZone);
 	GregorianCalendar data = new GregorianCalendar(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
 	return data;
-    }
-
-    public static Calendar getDateToday() {
-
-	Calendar date = Calendar.getInstance();
-
-	date.set(Calendar.HOUR_OF_DAY, 0);
-	date.set(Calendar.MINUTE, 0);
-	date.set(Calendar.SECOND, 0);
-	date.set(Calendar.MILLISECOND, 0);
-
-	return date;
     }
 
     public static String trunc(String string, int maximoDeCaracteres) {

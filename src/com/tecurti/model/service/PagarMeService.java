@@ -53,12 +53,13 @@ public class PagarMeService {
     }
     
     public static class RespostaEfetuarPagamentoNoCartaoCredito {
-	public boolean isErro;
+	public boolean isErroInterno;
 	public StatusTransacaoPagarMe status;
 	public Integer idTransacao;
 	
 	// Mensagem de resposta do adquirente referente ao status da transação.
 	public String mensagemReferenteAoStatus;
+	public String descErroInterno;
 
 	@Override
 	public String toString() {
@@ -67,30 +68,39 @@ public class PagarMeService {
     }
     
     public RespostaEfetuarPagamentoNoCartaoCredito efetuarPagamentoNoCartaoCredito(ParametrosEfetuarPagamentoNoCartaoCredito parametros) throws Exception {
-	String url = "https://api.pagar.me/1/transactions";
-	Map<String, Object> map = new HashMap<String, Object>();
-	map.put("api_key", parametros.apiKey);
-	map.put("card_id", parametros.cardId);
-	map.put("amount", ModelUtils.converterValorMonetarioDeDecimalParaCentavos(parametros.valorEmDecimais));
-	if (ModelUtils.isNotEmptyTrim(parametros.softDescriptor)) {
-	    map.put("soft_descriptor", ModelUtils.trunc(parametros.softDescriptor, 13));
-	} 
-	if (parametros.installments != null && parametros.installments >= 1 && parametros.installments <= 12) {
-	    map.put("installments", parametros.installments);
-	} 
-	
-	for (String keyMetadata : parametros.metadata.keySet()) {
-	    map.put("metadata["+keyMetadata+"]", parametros.metadata.get(keyMetadata));
-	}
-	
-	String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
-	Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
-//	ModelUtils.outprintMap(mapResposta);
 	
 	RespostaEfetuarPagamentoNoCartaoCredito resposta = new RespostaEfetuarPagamentoNoCartaoCredito();
-	resposta.idTransacao = (Integer) mapResposta.get("id");
-	resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
-	resposta.mensagemReferenteAoStatus = (String) mapResposta.get("acquirer_response_code");
+	
+	try {
+	    String url = "https://api.pagar.me/1/transactions";
+	    Map<String, Object> map = new HashMap<String, Object>();
+	    map.put("api_key", parametros.apiKey);
+	    map.put("card_id", parametros.cardId);
+	    map.put("amount", ModelUtils.converterValorMonetarioDeDecimalParaCentavos(parametros.valorEmDecimais));
+	    if (ModelUtils.isNotEmptyTrim(parametros.softDescriptor)) {
+	        map.put("soft_descriptor", ModelUtils.trunc(parametros.softDescriptor, 13));
+	    } 
+	    if (parametros.installments != null && parametros.installments >= 1 && parametros.installments <= 12) {
+	        map.put("installments", parametros.installments);
+	    } 
+	    
+	    for (String keyMetadata : parametros.metadata.keySet()) {
+	        map.put("metadata["+keyMetadata+"]", parametros.metadata.get(keyMetadata));
+	    }
+	    
+	    String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
+	    Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
+	    // ModelUtils.outprintMap(mapResposta);
+	    
+	    resposta.idTransacao = (Integer) mapResposta.get("id");
+	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
+	    resposta.mensagemReferenteAoStatus = (String) mapResposta.get("acquirer_response_code");
+	} catch (Exception e) {
+	    resposta.isErroInterno = true;
+	    resposta.descErroInterno = e.toString();
+	    e.printStackTrace();
+	}
+	
 	return resposta;
     }
 
