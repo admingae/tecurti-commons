@@ -1,8 +1,11 @@
 package com.tecurti.model.service.email;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
@@ -16,44 +19,60 @@ import com.tecurti.model.utils.ModelUtils;
 
 public class EmailServiceGAE {
 
-    public static Session abreSessao() throws Exception {
-	 
-	Properties props = new Properties();
-        Session session = Session.getDefaultInstance(props, null);
-	
-	return session;
-    }
-    
     public void enviarEmail(DadosParaEnviarEmail dadosParaEnviarEmail) throws Exception {
 	
-	dadosParaEnviarEmail.setEmailDestinatario(dadosParaEnviarEmail.getEmailDestinatario());
-	dadosParaEnviarEmail.setEmailsDestinatarios(dadosParaEnviarEmail.getEmailsDestinatarios());
-	
-	MimeMessage msg = new MimeMessage((Session)abreSessao());
-	msg.setFrom     (new InternetAddress(dadosParaEnviarEmail.getEmailRemetente(), dadosParaEnviarEmail.getNomeRemetente()));
-//	msg.setFrom     (new InternetAddress(Config.EMAIL_REMETENTE_EMAIL, Config.EMAIL_REMETENTE_NOME));
-	
-	if (dadosParaEnviarEmail.getEmailsDestinatarios() != null && !dadosParaEnviarEmail.getEmailsDestinatarios().equals("")) {
-	    msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(dadosParaEnviarEmail.getEmailsDestinatarios()));
+	Session session = Session.getDefaultInstance(new Properties(), null);
+	MimeMessage msg = new MimeMessage(session);
+	msg.setFrom(new InternetAddress(dadosParaEnviarEmail.getEmailRemetente(), dadosParaEnviarEmail.getNomeRemetente()));
+
+	if (dadosParaEnviarEmail.getListEmailDestinatarios().size() > 0) {
+	    RecipientType recipientType = dadosParaEnviarEmail.isUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia() ? Message.RecipientType.TO : Message.RecipientType.BCC;
+	    String listEmailsSeparadosPorVirgulaAsString = toStringListDeEmailsSeparandoPorVirgula(dadosParaEnviarEmail.getListEmailDestinatarios());
+	    
+	    msg.addRecipients(recipientType, InternetAddress.parse(listEmailsSeparadosPorVirgulaAsString));
 	} else {
-	    if (ModelUtils.isEmpty(dadosParaEnviarEmail.getEmailDestinatario()) || ModelUtils.isEmailValido(dadosParaEnviarEmail.getEmailDestinatario()) == false) {
+	    if (ModelUtils.isEmailValido(dadosParaEnviarEmail.getEmailDestinatario()) == false) {
 		return;
 	    }
-	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(dadosParaEnviarEmail.getEmailDestinatario(), dadosParaEnviarEmail.getNomeDestinatario()));	    
+	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(dadosParaEnviarEmail.getEmailDestinatario(), dadosParaEnviarEmail.getNomeDestinatario()));
 	}
-	
-	msg.setSubject  (dadosParaEnviarEmail.getAssunto(), "UTF-8");
-	
+
+	msg.setSubject(dadosParaEnviarEmail.getAssunto(), "UTF-8");
+
 	boolean isEnviarMensagemFormatoHtml = dadosParaEnviarEmail.getCorpoMensagemHtml() != null && !dadosParaEnviarEmail.getCorpoMensagemHtml().equals("");
-	if (isEnviarMensagemFormatoHtml) { 
-	    msg.setContent (criarMultipart(dadosParaEnviarEmail.getCorpoMensagemHtml()));
+	if (isEnviarMensagemFormatoHtml) {
+	    msg.setContent(criarMultipart(dadosParaEnviarEmail.getCorpoMensagemHtml()));
 	} else {
-	    msg.setText    (dadosParaEnviarEmail.getCorpoMensagemTexto());
+	    msg.setText(dadosParaEnviarEmail.getCorpoMensagemTexto());
 	}
-	
+
 	Transport.send(msg);
     }
     
+    private String toStringListDeEmailsSeparandoPorVirgula(List<String> listEmails) {
+	StringBuilder builder = new StringBuilder("");
+	for (String email : listEmails) {
+	    if (ModelUtils.isEmailValido(email) == false) {
+		continue;
+	    }
+	    if (builder.length() > 0) {
+		builder.append(",");
+	    }
+	    builder.append(email);
+	}
+	return builder.toString();
+    }
+    
+    public static void main(String[] args) {
+	List<String> ll = new ArrayList<>();
+	ll.add("Felipe@gmail.com");
+	ll.add("Felipe1gmail.com");
+	ll.add("Felipe2@gmail.com");
+//	ll.add("Felipe1");
+//	ll.add("Felipe2");
+	System.err.println(new EmailServiceGAE().toStringListDeEmailsSeparandoPorVirgula(ll));
+    }
+
     private Multipart criarMultipart(String texto) throws MessagingException {
 	
         MimeBodyPart htmlPart = new MimeBodyPart();

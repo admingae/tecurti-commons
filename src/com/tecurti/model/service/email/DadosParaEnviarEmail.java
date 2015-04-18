@@ -1,6 +1,7 @@
 package com.tecurti.model.service.email;
 
-import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DadosParaEnviarEmail {
 
@@ -8,13 +9,13 @@ public class DadosParaEnviarEmail {
     String emailRemetente;
     String nomeDestinatario;
     String emailDestinatario;
-    String emailsDestinatarios;
+    List<String> listEmailDestinatarios = new ArrayList<>();
+    boolean usuarioQueReceberaEmailPodeVerOsOutrosEmCopia = true;
     String emailDestinatarioComCopia;
     String emailDestinatarioComCopiaOculta;
     String assunto;
     String corpoMensagemHtml;
     String corpoMensagemTexto;
-//    i18nUsandoApiPadrao idioma;
     
     public String getNomeRemetente() {
         return nomeRemetente;
@@ -71,17 +72,26 @@ public class DadosParaEnviarEmail {
         this.corpoMensagemTexto = corpoMensagemTexto;
     }
     
-    public String getEmailsDestinatarios() {
-        return emailsDestinatarios;
+    public boolean isUsuarioQueRecebeuEmailPodeVerOsOutrosEmCopia() {
+        return isUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia();
     }
-    public void setEmailsDestinatarios(String emailsDestinatarios) {
-        this.emailsDestinatarios = emailsDestinatarios;
+    public boolean isUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia() {
+        return usuarioQueReceberaEmailPodeVerOsOutrosEmCopia;
     }
-//    public i18nUsandoApiPadrao getIdioma() {
-//        return idioma;
-//    }
-//    public void setIdioma(i18nUsandoApiPadrao idioma) {
-//        this.idioma = idioma;
-//    }
+    public void setUsuarioQueRecebeuEmailPodeVerOsOutrosEmCopia(boolean usuarioQueRecebeuEmailPodeVerOsOutrosEmCopia) {
+        setUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia(usuarioQueRecebeuEmailPodeVerOsOutrosEmCopia);
+    }
+    public void setUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia(boolean usuarioQueRecebeuEmailPodeVerOsOutrosEmCopia) {
+        this.usuarioQueReceberaEmailPodeVerOsOutrosEmCopia = usuarioQueRecebeuEmailPodeVerOsOutrosEmCopia;
+    }
+    public void addEmailDestinatario(String email) {
+	listEmailDestinatarios.add(email);
+    }
+    public List<String> getListEmailDestinatarios() {
+        return listEmailDestinatarios;
+    }
+    public void setListEmailDestinatarios(List<String> listEmailDestinatarios) {
+        this.listEmailDestinatarios = listEmailDestinatarios;
+    }
 
 }

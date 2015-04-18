@@ -214,6 +214,9 @@ public class ModelUtils {
 
     private static Pattern patternValidacaoEmail = Pattern.compile("^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$"); 
     public static boolean isEmailValido(String email) {
+	if (ModelUtils.isEmptyTrim(email)) {
+	    return false;
+	}
 	Matcher matcher = patternValidacaoEmail.matcher(email); 
 	return matcher.find();
     }
@@ -601,18 +604,6 @@ public class ModelUtils {
 	}
     }
 
-    public static void main(String[] args) throws Exception {
-	byte[] compactarBytes = compactarBytes("felipe".getBytes());
-	//	FileOutputStream out = new FileOutputStream(new File("C:\\temp\\xx.zip"));
-	//	out.write(compactarBytes);
-	//	out.close();
-
-
-	byte[] descompactarBytes = descompactarBytes(compactarBytes);
-	String string = new String(descompactarBytes);
-	System.err.println(string);
-    }
-
     public static byte[] descompactarBytes(byte[] bytes) {
 	try {
 	    ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(bytes));
@@ -901,6 +892,11 @@ public class ModelUtils {
 	}
 
     }
+
+    public static BigDecimal arredondarDinheiroParaDuasCasasDecimais(BigDecimal valorRestanteParaPagamento) {
+	return valorRestanteParaPagamento.setScale(2, RoundingMode.HALF_UP);
+    }
+    
 }
 
 
