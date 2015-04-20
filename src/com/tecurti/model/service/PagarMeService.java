@@ -23,7 +23,6 @@ public class PagarMeService {
     }
     
     /**
-     * 
      * @param cardId
      * @param apiKey
      * @param valorEmDecimais
