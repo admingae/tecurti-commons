@@ -1,12 +1,12 @@
 package com.tecurti.view.util;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.reflect.Field;
@@ -103,8 +103,8 @@ public class WebUtils {
 	ServletFileUpload uploadHandler = new ServletFileUpload();
 	FileItemIterator iterator = uploadHandler.getItemIterator(request);
 	while (iterator.hasNext()) {
-
 	    FileItemStream item = iterator.next();
+	    System.err.println("item.getFieldName(): " + item.getFieldName());
 	    InputStream stream = item.openStream();
 	    byte[] byteArray = IOUtils.toByteArray(stream);
 
@@ -122,6 +122,7 @@ public class WebUtils {
 		    } else {
 			UploadedFile uploadedFile = new UploadedFile();
 			uploadedFile.nomeArquivo = item.getName();
+			uploadedFile.nomeParametro = item.getFieldName();
 			uploadedFile.bytes = byteArray;
 			field.set(object, uploadedFile);
 		    }
@@ -1111,17 +1112,26 @@ public class WebUtils {
     
     public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
 	
+	List<UploadedFile> listUploadedFiles = new ArrayList<UploadedFile>();
+	
         StringBuilder queryString = new StringBuilder();
-        for (Map.Entry<String,Object> param : params.entrySet()) {
-            if (queryString.length() != 0) queryString.append('&');
-            queryString.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-            queryString.append('=');
-            queryString.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
-        }
+	for (Map.Entry<String, Object> param : params.entrySet()) {
+	    Object value = param.getValue();
+	    if (value instanceof UploadedFile) {
+		listUploadedFiles.add((UploadedFile) value);
+	    } else {
+		if (queryString.length() != 0){
+		    queryString.append('&');
+		}
+		queryString.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+		queryString.append('=');
+		queryString.append(URLEncoder.encode(String.valueOf(value), "UTF-8"));
+	    }
+	}
         byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
 
         String urlFinal;
-        if (method == HttpMethod.POST) {
+        if (listUploadedFiles.size() > 0 || method == HttpMethod.POST) {
             urlFinal = url;
 	} else {
 	    if (queryStringAsBytes.length == 0) {
@@ -1132,18 +1142,61 @@ public class WebUtils {
 	}
         HttpURLConnection conn = (HttpURLConnection)new URL(urlFinal).openConnection();
         conn.setRequestMethod(method.toString());
-        conn.setConnectTimeout(50000);
+        conn.setConnectTimeout(120000);
         conn.setDoOutput(true);
-        if (method == HttpMethod.POST) {
+        conn.setRequestProperty("Cache-Control", "no-cache");
+        
+        if (listUploadedFiles.size() > 0) {
+            
+            String crlf = "\r\n";
+            String twoHyphens = "--";
+            conn.setRequestMethod("POST");
+//            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            
+            conn.getOutputStream().write(queryStringAsBytes);
+            // http://www.w3.org/TR/html401/interact/forms.html
+            // http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
+            for (UploadedFile uploadedFile : listUploadedFiles) {
+		
+        	String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
+        	String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
+        	
+        	DataOutputStream request = new DataOutputStream(conn.getOutputStream());
+        	request.writeBytes("Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
+        	
+        	String boundary =  "AAA";
+        	request.writeBytes(crlf + "Content-Type: multipart/form-data; boundary="+boundary);
+        	request.writeBytes(crlf + twoHyphens + boundary);
+        	request.writeBytes(crlf + crlf);
+        	request.write(uploadedFile.bytes);
+		request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
+		
+		// ----------------
+		boundary =  "BBB";
+		request.writeBytes(crlf + twoHyphens + boundary);
+		request.writeBytes(crlf + "Content-Disposition: form-data; name=\"parametros\"" + crlf);
+		request.writeBytes(crlf);
+		request.writeBytes("parametroFelipe");
+		request.writeBytes(crlf);
+		request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
+        	
+        	
+        	// ----------------
+        	request.flush();
+        	request.close();
+	    }
+            
+	} else if (method == HttpMethod.POST) {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
             conn.getOutputStream().write(queryStringAsBytes);
 	}
-
-        Reader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        
+        Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	
-	byte[] bytesOriginalFromFacebook = IOUtils.toByteArray(reader);
-	return new String(bytesOriginalFromFacebook);
+	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
+	return new String(respostaAsBytes);
     }
 
     public static String getUrlBase(HttpServletRequest request) {
@@ -1198,6 +1251,13 @@ public class WebUtils {
 	}
 	
 	return false;
+    }
+    public static void popularObjetoComParametrosDoRequestVerificandoTipoDoConteudo(Object object, HttpServletRequest request) throws Exception {
+	if (ServletFileUpload.isMultipartContent(request)) {
+	    WebUtils.popularObjectComParametersMultipartFormData(object, request);
+	} else {
+	    WebUtils.popularObjectComParameters(object, request);
+	}	
     }
 }
 
