@@ -99,12 +99,17 @@ public class WebUtils {
     }
     
     public static void popularObjectComParametersMultipartFormData(Object object, HttpServletRequest request) throws IllegalAccessException, Exception {
+	popularObjectComParametersMultipartFormData(object, request, false);
+    }
+    public static void popularObjectComParametersMultipartFormData(Object object, HttpServletRequest request, boolean log) throws IllegalAccessException, Exception {
 	
 	ServletFileUpload uploadHandler = new ServletFileUpload();
 	FileItemIterator iterator = uploadHandler.getItemIterator(request);
 	while (iterator.hasNext()) {
 	    FileItemStream item = iterator.next();
-	    System.err.println("item.getFieldName(): " + item.getFieldName());
+	    if (log) {
+		System.err.println("item.getFieldName(): " + item.getFieldName());
+	    }
 	    InputStream stream = item.openStream();
 	    byte[] byteArray = IOUtils.toByteArray(stream);
 
@@ -1147,40 +1152,45 @@ public class WebUtils {
         conn.setRequestProperty("Cache-Control", "no-cache");
         
         if (listUploadedFiles.size() > 0) {
+            // http://www.w3.org/TR/html401/interact/forms.html
+            // http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
             
             String crlf = "\r\n";
             String twoHyphens = "--";
+            String boundary =  "*****";
+            
             conn.setRequestMethod("POST");
-//            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             conn.setRequestProperty("Connection", "Keep-Alive");
             
             conn.getOutputStream().write(queryStringAsBytes);
-            // http://www.w3.org/TR/html401/interact/forms.html
-            // http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
             for (UploadedFile uploadedFile : listUploadedFiles) {
 		
         	String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
         	String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
         	
         	DataOutputStream request = new DataOutputStream(conn.getOutputStream());
-        	request.writeBytes("Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
         	
-        	String boundary =  "AAA";
-        	request.writeBytes(crlf + "Content-Type: multipart/form-data; boundary="+boundary);
         	request.writeBytes(crlf + twoHyphens + boundary);
+        	request.writeBytes(crlf + "Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
         	request.writeBytes(crlf + crlf);
         	request.write(uploadedFile.bytes);
-		request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
+        	
+        	// ----------------
+        	/*request.writeBytes(crlf + crlf);
+        	request.writeBytes(twoHyphens + boundary);
+        	request.writeBytes(crlf);
+        	request.writeBytes("Content-Disposition: form-data; name=\"oooo" + attachmentName + "\"; filename=\"oooo" + attachmentFileName + "\"");
+        	request.writeBytes(crlf + crlf);
+        	request.write(uploadedFile.bytes);*/
 		
 		// ----------------
-		boundary =  "BBB";
-		request.writeBytes(crlf + twoHyphens + boundary);
-		request.writeBytes(crlf + "Content-Disposition: form-data; name=\"parametros\"" + crlf);
-		request.writeBytes(crlf);
-		request.writeBytes("parametroFelipe");
-		request.writeBytes(crlf);
-		request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
+        	request.writeBytes(crlf + twoHyphens + boundary);
+        	request.writeBytes(crlf + "Content-Disposition: form-data; name=\"parametros\"");
+        	request.writeBytes(crlf + crlf);
+        	request.writeBytes("felipeeee");
         	
+        	request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
         	
         	// ----------------
         	request.flush();
