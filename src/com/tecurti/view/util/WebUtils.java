@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,6 +86,17 @@ public class WebUtils {
     }
     
     public static void popularObjectComParameters(Object object, HttpServletRequest request) throws IllegalAccessException {
+
+	if (object instanceof Map) {
+	    Map map = (Map) object;
+	    Set<String> keySet = request.getParameterMap().keySet();
+	    for (String key : keySet) {
+		String valor = request.getParameter(key);
+		map.put(key, valor);
+	    }
+	    return;
+	}
+	
 	Field[] fields = object.getClass().getDeclaredFields();
 	for (Field field : fields) {
 	    field.setAccessible(true);
@@ -103,6 +115,14 @@ public class WebUtils {
     }
     public static void popularObjectComParametersMultipartFormData(Object object, HttpServletRequest request, boolean log) throws IllegalAccessException, Exception {
 	
+	Map map = null;
+	boolean isMap = false;
+	if (object instanceof Map) {
+	    isMap = true;
+	    map = (Map) object;
+	} 
+	
+	// ----------------
 	ServletFileUpload uploadHandler = new ServletFileUpload();
 	FileItemIterator iterator = uploadHandler.getItemIterator(request);
 	while (iterator.hasNext()) {
@@ -113,22 +133,41 @@ public class WebUtils {
 	    InputStream stream = item.openStream();
 	    byte[] byteArray = IOUtils.toByteArray(stream);
 
-	    Field field = findFieldByReflection(object.getClass(), item.getFieldName());
-	    if (field == null) {
-		continue;
-	    } else {
+	    Field field = null;
+	    if (isMap == false) {
+		field = findFieldByReflection(object.getClass(), item.getFieldName());
+		if (field == null) {
+		    continue;
+		} 
 		field.setAccessible(true);
-		if (item.isFormField()) {
-		    String valor = URLDecoder.decode(new String(byteArray), "UTF-8");
-		    field.set(object, valor == null ? "" : valor);
+	    }
+	    
+	    if (item.isFormField()) {
+		String valor = URLDecoder.decode(new String(byteArray), "UTF-8");
+		String valorFinal = valor == null ? "" : valor;
+		if (isMap) {
+		    map.put(item.getFieldName(), valorFinal);
 		} else {
-		    if (byteArray.length == 0) {
-			field.set(object, null);
+		    field.set(object, valorFinal);
+		}
+	    } else {
+		if (byteArray.length == 0) {
+		    
+		    UploadedFile uploadedFile = null;
+		    if (isMap) {
+			map.put(item.getFieldName(), uploadedFile);
 		    } else {
-			UploadedFile uploadedFile = new UploadedFile();
-			uploadedFile.nomeArquivo = item.getName();
-			uploadedFile.nomeParametro = item.getFieldName();
-			uploadedFile.bytes = byteArray;
+			field.set(object, uploadedFile);
+		    }
+		} else {
+		    UploadedFile uploadedFile = new UploadedFile();
+		    uploadedFile.nomeArquivo = item.getName();
+		    uploadedFile.nomeParametro = item.getFieldName();
+		    uploadedFile.bytes = byteArray;
+		    
+		    if (isMap) {
+			map.put(item.getFieldName(), uploadedFile);
+		    } else {
 			field.set(object, uploadedFile);
 		    }
 		}
@@ -1115,100 +1154,123 @@ public class WebUtils {
 	GET, POST
     }
     
+    private static class ParametroSimplesWebService {
+	public String name;
+	public String value;
+    }
     public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
 	
-	List<UploadedFile> listUploadedFiles = new ArrayList<UploadedFile>();
-	
-        StringBuilder queryString = new StringBuilder();
+	// ----------------
+	List<Object> listParametros = new ArrayList<>();
 	for (Map.Entry<String, Object> param : params.entrySet()) {
 	    Object value = param.getValue();
+	    if (value == null) {
+		continue;
+	    }
 	    if (value instanceof UploadedFile) {
-		listUploadedFiles.add((UploadedFile) value);
+		listParametros.add(value);
 	    } else {
-		if (queryString.length() != 0){
-		    queryString.append('&');
-		}
-		queryString.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-		queryString.append('=');
-		queryString.append(URLEncoder.encode(String.valueOf(value), "UTF-8"));
+		ParametroSimplesWebService parametro = new ParametroSimplesWebService();
+		parametro.name = URLEncoder.encode(param.getKey(), "UTF-8");
+		parametro.value = URLEncoder.encode(String.valueOf(value), "UTF-8");
+		listParametros.add(parametro);
 	    }
 	}
-        byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
+	
+	// ----------------
+	HttpURLConnection conn = null;
+	boolean isMultipart = isMultipart(listParametros);
+	if (isMultipart) {
 
-        String urlFinal;
-        if (listUploadedFiles.size() > 0 || method == HttpMethod.POST) {
-            urlFinal = url;
-	} else {
-	    if (queryStringAsBytes.length == 0) {
-		urlFinal = url;
-	    } else {
-		urlFinal = url + "?" + new String(queryStringAsBytes);
-	    }
-	}
-        HttpURLConnection conn = (HttpURLConnection)new URL(urlFinal).openConnection();
-        conn.setRequestMethod(method.toString());
-        conn.setConnectTimeout(120000);
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Cache-Control", "no-cache");
-        
-        if (listUploadedFiles.size() > 0) {
-            // http://www.w3.org/TR/html401/interact/forms.html
-            // http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
-            
             String crlf = "\r\n";
             String twoHyphens = "--";
             String boundary =  "*****";
             
-            conn.setRequestMethod("POST");
+            conn = (HttpURLConnection)new URL(url).openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Cache-Control", "no-cache");
+            conn.setRequestMethod(HttpMethod.POST.toString());
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setConnectTimeout(120000);
             
-            conn.getOutputStream().write(queryStringAsBytes);
-            for (UploadedFile uploadedFile : listUploadedFiles) {
-		
-        	String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
-        	String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
-        	
-        	DataOutputStream request = new DataOutputStream(conn.getOutputStream());
-        	
+            DataOutputStream request = new DataOutputStream(conn.getOutputStream());
+            
+            for (Object object : listParametros) {
         	request.writeBytes(crlf + twoHyphens + boundary);
-        	request.writeBytes(crlf + "Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
-        	request.writeBytes(crlf + crlf);
-        	request.write(uploadedFile.bytes);
         	
-        	// ----------------
-        	/*request.writeBytes(crlf + crlf);
-        	request.writeBytes(twoHyphens + boundary);
-        	request.writeBytes(crlf);
-        	request.writeBytes("Content-Disposition: form-data; name=\"oooo" + attachmentName + "\"; filename=\"oooo" + attachmentFileName + "\"");
-        	request.writeBytes(crlf + crlf);
-        	request.write(uploadedFile.bytes);*/
+        	if (object instanceof ParametroSimplesWebService) {
+        	    ParametroSimplesWebService paramSimples = (ParametroSimplesWebService) object;
+
+        	    request.writeBytes(crlf + "Content-Disposition: form-data; name=\""+paramSimples.name+"\"");
+        	    request.writeBytes(crlf + crlf);
+        	    request.writeBytes(paramSimples.value);
+        	    
+		} else {
+		    UploadedFile uploadedFile = (UploadedFile) object;
+		    String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
+		    String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
+		    
+		    request.writeBytes(crlf + "Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
+		    request.writeBytes(crlf + crlf);
+		    request.write(uploadedFile.bytes);
+		}
+
+            }
+            
+            request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
+            request.flush();
+            request.close();
+            
+	} else {
+	    StringBuilder queryString = new StringBuilder();
+	    for (Object object : listParametros) {
+		ParametroSimplesWebService param = (ParametroSimplesWebService) object;
 		
-		// ----------------
-        	request.writeBytes(crlf + twoHyphens + boundary);
-        	request.writeBytes(crlf + "Content-Disposition: form-data; name=\"parametros\"");
-        	request.writeBytes(crlf + crlf);
-        	request.writeBytes("felipeeee");
-        	
-        	request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
-        	
-        	// ----------------
-        	request.flush();
-        	request.close();
+		if (queryString.length() != 0){
+		    queryString.append('&');
+		}
+		queryString.append(param.name);
+		queryString.append('=');
+		queryString.append(param.value);
 	    }
-            
-	} else if (method == HttpMethod.POST) {
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
-            conn.getOutputStream().write(queryStringAsBytes);
+	    byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
+	    
+	    // ----------------
+	    if (method == HttpMethod.POST) {
+		conn = (HttpURLConnection)new URL(url).openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestProperty("Cache-Control", "no-cache");
+		conn.setRequestMethod(method.toString());
+		conn.setConnectTimeout(50000);
+		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
+		conn.getOutputStream().write(queryStringAsBytes);
+	    } else {
+		String urlComQueryString = url + "?" + new String(queryStringAsBytes);
+		
+	        conn = (HttpURLConnection)new URL(urlComQueryString).openConnection();
+	        conn.setRequestMethod(method.toString());
+	        conn.setConnectTimeout(50000);
+	        conn.setDoOutput(true);
+	        conn.setRequestProperty("Cache-Control", "no-cache");
+	    }
 	}
-        
-        Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	
+	// ----------------
+        Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
 	return new String(respostaAsBytes);
     }
 
+    private static boolean isMultipart(List listParametros) {
+	for (Object object : listParametros) {
+	    if (object instanceof UploadedFile) {
+		return true;
+	    }
+	}
+	return false;
+    }
     public static String getUrlBase(HttpServletRequest request) {
 
 	String scheme = request.getScheme();             // http
