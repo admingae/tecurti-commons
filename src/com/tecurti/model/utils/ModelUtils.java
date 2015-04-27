@@ -421,6 +421,9 @@ public class ModelUtils {
 
 
     public static Calendar strToDate(String strDate, String dateFormat) {
+	return strToDate(strDate, dateFormat, GMT_SAO_PAULO);
+    }
+    public static Calendar strToDate(String strDate, String dateFormat, TimeZone timezone) {
 
 	Calendar cal = null;
 
