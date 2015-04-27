@@ -89,7 +89,6 @@ public class PagarMeService {
 	    
 	    String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
 	    Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
-	    // ModelUtils.outprintMap(mapResposta);
 	    
 	    resposta.idTransacao = (Integer) mapResposta.get("id");
 	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
