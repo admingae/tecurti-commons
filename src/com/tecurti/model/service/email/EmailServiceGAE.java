@@ -28,6 +28,9 @@ public class EmailServiceGAE {
 	if (dadosParaEnviarEmail.getListEmailDestinatarios().size() > 0) {
 	    RecipientType recipientType = dadosParaEnviarEmail.isUsuarioQueReceberaEmailPodeVerOsOutrosEmCopia() ? Message.RecipientType.TO : Message.RecipientType.BCC;
 	    String listEmailsSeparadosPorVirgulaAsString = toStringListDeEmailsSeparandoPorVirgula(dadosParaEnviarEmail.getListEmailDestinatarios());
+	    if (listEmailsSeparadosPorVirgulaAsString.isEmpty()) {
+		return;
+	    }
 	    
 	    msg.addRecipients(recipientType, InternetAddress.parse(listEmailsSeparadosPorVirgulaAsString));
 	} else {
