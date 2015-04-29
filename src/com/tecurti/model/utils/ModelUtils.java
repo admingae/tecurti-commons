@@ -169,7 +169,7 @@ public class ModelUtils {
 
     public static Calendar strToDate(String strDate, i18nUsandoApiPadrao idioma) {
 	String dateFormat = idioma.geti18nTexto("java.simpleDateFormat.DDMMYYYY");
-	return ModelUtils.strToDate(strDate, dateFormat);
+	return ModelUtils.strToDate(strDate, dateFormat, GMT_SAO_PAULO);
     }  
 
     public static String encrypt(String string) {
