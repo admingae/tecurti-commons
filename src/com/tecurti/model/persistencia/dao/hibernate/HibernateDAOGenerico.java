@@ -119,6 +119,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	executeHQL(session, hql, param);
     }
     
+    public void deleteAll() throws Exception {
+	String hql = "delete from " + getGenericsClass().getName();
+	executeHQL(null, hql, null);
+    }
+    
     public void executeHQL(final String hql, final DAOGenericoParameter... parameters) throws Exception {
 	executeHQL(null, hql, parameters);
     }
@@ -136,8 +141,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     
     private void doExecuteHQL(Session session, String hql, DAOGenericoParameter... parameters) {
 	Query query = session.createQuery(hql);
-	for (DAOGenericoParameter param : parameters) {
-	    query.setParameter(param.getKey(), param.getValue());
+	
+	if (parameters != null) {
+	    for (DAOGenericoParameter param : parameters) {
+		query.setParameter(param.getKey(), param.getValue());
+	    }
 	}
 	
 	query.executeUpdate();
