@@ -2,7 +2,7 @@ package com.tecurti.model.entidades.mapa;
 
 import java.util.List;
 
-public class Planeta {
+public class Planeta implements PontoNoMapa {
 
     Long id;
     String i18nNome;

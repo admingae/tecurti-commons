@@ -2,7 +2,7 @@ package com.tecurti.model.entidades.mapa;
 
 import java.util.List;
 
-public class Continente {
+public class Continente implements PontoNoMapa {
     
     Long id;
     String i18nNome;

@@ -10,14 +10,14 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
 import com.tecurti.model.utils.ModelUtils;
 
-public class Pais {
+public class Pais implements PontoNoMapa {
 
     final Long id;
     final String i18nNome;
     final String tokenMaps;
 
     Continente continente;
-    List<Pais> listPaisesVizinhos = new ArrayList<>();
+    ZoomNoMapa zoom = new ZoomNoMapa();
     List<Estado> listEstados = new ArrayList<>();
 
     public Pais(Long id, String i18nNome, Continente continente, String tokenMaps) {
@@ -69,10 +69,6 @@ public class Pais {
 	return idioma.geti18nTexto(i18nNome);
     }
     
-    public List<Pais> getPaisesVizinho() {
-	return listPaisesVizinhos;
-    }
-
     public Long getId() {
 	return id;
     }
@@ -87,14 +83,6 @@ public class Pais {
 
     public void setContinente(Continente continente) {
 	this.continente = continente;
-    }
-
-    public List<Pais> getListPaisesVizinhos() {
-	return listPaisesVizinhos;
-    }
-
-    public void setListPaisesVizinhos(List<Pais> listPaisesVizinhos) {
-	this.listPaisesVizinhos = listPaisesVizinhos;
     }
 
     public List<Estado> getListEstados() {
@@ -121,6 +109,20 @@ public class Pais {
 	}
 	return null;
     }
+
+    @Override
+    public String toString() {
+	return i18nNome;
+    }
+
+    public ZoomNoMapa getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(ZoomNoMapa zoom) {
+        this.zoom = zoom;
+    }
+    
 }
 
 

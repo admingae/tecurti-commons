@@ -7,13 +7,14 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
 
-public class Estado {
+public class Estado implements PontoNoMapa {
 
     final Long id;
     final String i18nNome;
     final String tokenMaps;
     final Pais pais;
-    List<Estado> listEstadosVizinhos = new ArrayList<>();
+    
+    ZoomNoMapa zoom = new ZoomNoMapa();
     
     public Estado(Long id, String i18nNome, Pais pais, String tokenMaps) {
 	super();
@@ -31,28 +32,12 @@ public class Estado {
 	return idioma.geti18nTexto(i18nNome);
     }
     
-    public void addEstadoVizinho(Estado estado) {
-	listEstadosVizinhos.add(estado);
-    }
-
-    public List<Estado> getEstadosVizinhos() {
-	return listEstadosVizinhos;
-    }
-
     public Long getId() {
 	return id;
     }
 
     public String getI18nNome() {
 	return i18nNome;
-    }
-
-    public List<Estado> getListEstadosVizinhos() {
-	return listEstadosVizinhos;
-    }
-
-    public void setListEstadosVizinhos(List<Estado> listEstadosVizinhos) {
-	this.listEstadosVizinhos = listEstadosVizinhos;
     }
 
     public Pais getPais() {
@@ -63,4 +48,16 @@ public class Estado {
         return tokenMaps;
     }
 
+    @Override
+    public String toString() {
+	return i18nNome;
+    }
+
+    public ZoomNoMapa getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(ZoomNoMapa zoom) {
+        this.zoom = zoom;
+    }
 }
