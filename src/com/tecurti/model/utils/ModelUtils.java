@@ -899,6 +899,13 @@ public class ModelUtils {
     public static BigDecimal arredondarDinheiroParaDuasCasasDecimais(BigDecimal valorRestanteParaPagamento) {
 	return valorRestanteParaPagamento.setScale(2, RoundingMode.HALF_UP);
     }
+
+    public static boolean isNotEmpty(List<Long> list) {
+	return !isEmpty(list);
+    }
+    public static boolean isEmpty(List<Long> list) {
+	return list == null || list.isEmpty();
+    }
     
 }
 

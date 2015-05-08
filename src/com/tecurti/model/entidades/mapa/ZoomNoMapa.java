@@ -50,7 +50,48 @@ public class ZoomNoMapa {
 	}
 	return toString;
     }
+    
+    public int getTotalNiveis() {
+	return listZoom.size();
+    }
+    
+    public List<PontoNoMapa> getPontosNoMapaParaOsNiveisMaiores(int nivel) {
+	List<PontoNoMapa> list = new ArrayList<>();
+	
+	for (int nivelAtual = nivel + 1; nivelAtual <= getTotalNiveis(); nivelAtual++) {
+	    List<PontoNoMapa> listNiveis = getPontosNoMapaPorNivel(nivelAtual);
+	    if (listNiveis != null) {
+		list.addAll(listNiveis);
+	    }
+	}
+	
+	return list;
+    }
+    public List<PontoNoMapa> getPontosNoMapaParaOsNiveisMenores(int nivel) {
+	List<PontoNoMapa> list = new ArrayList<>();
+	
+	for (int nivelAtual = 1; nivelAtual < nivel; nivelAtual++) {
+	    List<PontoNoMapa> listNiveis = getPontosNoMapaPorNivel(nivelAtual);
+	    if (listNiveis != null) {
+		list.addAll(listNiveis);
+	    }
+	}
+	
+	return list;
+    }
+    public List<PontoNoMapa> getPontosNoMapaPorNivel(int nivel) {
+	if (nivel < 0 || nivel > listZoom.size()) {
+	    return null;
+	}
+	
+	return listZoom.get(nivel-1);
+    }
 }
+
+
+
+
+
 
 
 

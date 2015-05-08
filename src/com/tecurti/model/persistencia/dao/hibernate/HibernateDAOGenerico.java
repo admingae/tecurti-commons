@@ -2,6 +2,7 @@ package com.tecurti.model.persistencia.dao.hibernate;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.transform.ResultTransformer;
 
 public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 
@@ -151,7 +153,6 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	query.executeUpdate();
     }
     
-
     public List<T> executeSQLQuery(final String sql, final DAOGenericoParameter... parameters) throws Exception {
 	return executeSQLQuery(null, sql, parameters);
     }
@@ -167,18 +168,49 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	} else {
 	    return doExecuteSQLQuery(session, sql, parameters);
 	}
-	
     }
 
     private List<T> doExecuteSQLQuery(Session session, final String sql, final DAOGenericoParameter... parameters) throws Exception {
 
 	SQLQuery query = session.createSQLQuery(sql);
-	for (DAOGenericoParameter param : parameters) {
-	    query.setParameter(param.getKey(), param.getValue());
-	}
+	incluirParametrosNaQuery(query, parameters);
 	query.addEntity(getGenericsClass());
 
 	return query.list();
+    }
+    
+    public List executeSQLQueryForDifferentResultType(String sql, ResultTransformer resultTransformer, DAOGenericoParameter... parameters) throws Exception {
+	return executeSQLQueryForDifferentResultType(null, sql, resultTransformer, parameters);
+    }
+    public List executeSQLQueryForDifferentResultType(Session session, final String sql, final ResultTransformer resultTransformer, final DAOGenericoParameter... parameters) throws Exception {
+	if (session == null) {
+	    Object retorno = executeTransaction(new HibernateSessionCommand() {
+		public Object executeComRetorno(Session sess, Transaction transaction) throws Exception {    
+		    return doExecuteSQLQueryForDifferentResultType(sess, sql, resultTransformer, parameters);
+		}
+	    });
+	    return (List) retorno;
+	} else {
+	    return doExecuteSQLQueryForDifferentResultType(session, sql, resultTransformer, parameters);
+	}
+    }
+    private List doExecuteSQLQueryForDifferentResultType(Session session, final String sql, ResultTransformer resultTransformer, final DAOGenericoParameter... parameters) throws Exception {
+	
+	SQLQuery query = session.createSQLQuery(sql);
+	incluirParametrosNaQuery(query, parameters);
+	query.setResultTransformer(resultTransformer);
+	
+	return query.list();
+    }
+
+    private void incluirParametrosNaQuery(SQLQuery query, final DAOGenericoParameter... parameters) {
+	for (DAOGenericoParameter param : parameters) {
+	    if (param.getValue() instanceof Collection) {
+		query.setParameterList(param.getKey(), (Collection) param.getValue());
+	    } else {
+		query.setParameter(param.getKey(), param.getValue());
+	    }
+	}
     }
     
     public void executeSQL(final String sql, final DAOGenericoParameter... parameters) throws Exception {
