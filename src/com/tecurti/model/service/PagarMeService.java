@@ -59,10 +59,11 @@ public class PagarMeService {
 	// Mensagem de resposta do adquirente referente ao status da transação.
 	public String mensagemReferenteAoStatus;
 	public String descErroInterno;
+	public String codigoStatus;
 
 	@Override
 	public String toString() {
-	    return "[status=" + status + ", idTransacao=" + idTransacao + ", mensagemReferenteAoStatus=" + mensagemReferenteAoStatus + "]";
+	    return "[status=" + status + ", idTransacao=" + idTransacao + ", mensagemReferenteAoStatus=" + mensagemReferenteAoStatus +", codigoStatus=" + codigoStatus + "]";
 	}
     }
     
@@ -76,6 +77,7 @@ public class PagarMeService {
 	    map.put("api_key", parametros.apiKey);
 	    map.put("card_id", parametros.cardId);
 	    map.put("amount", ModelUtils.converterValorMonetarioDeDecimalParaCentavos(parametros.valorEmDecimais));
+	   
 	    if (ModelUtils.isNotEmptyTrim(parametros.softDescriptor)) {
 	        map.put("soft_descriptor", ModelUtils.trunc(parametros.softDescriptor, 13));
 	    } 
@@ -92,7 +94,8 @@ public class PagarMeService {
 	    
 	    resposta.idTransacao = (Integer) mapResposta.get("id");
 	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
-	    resposta.mensagemReferenteAoStatus = (String) mapResposta.get("acquirer_response_code");
+	    resposta.mensagemReferenteAoStatus = (String) mapResposta.get("status_reason");
+	    resposta.codigoStatus = (String) mapResposta.get("acquirer_response_code");
 	} catch (Exception e) {
 	    resposta.isErroInterno = true;
 	    resposta.descErroInterno = e.toString();
