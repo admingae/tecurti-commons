@@ -10,7 +10,7 @@ import com.tecurti.view.util.WebUtils.HttpMethod;
 
 public class PagarMeService {
 
-    public String cadastrarCartao(String cardHash, String apiKey) throws Exception {
+    public RespostaCadastrarCartaoCredito cadastrarCartao(String cardHash, String apiKey) throws Exception {
 	String url = "https://api.pagar.me/1/cards";
 	Map<String, Object> map = new HashMap<String, Object>();
 	map.put("api_key", apiKey);
@@ -19,7 +19,8 @@ public class PagarMeService {
 	String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
 	Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
 	
-	return (String) mapResposta.get("id");
+	RespostaCadastrarCartaoCredito resposta = new RespostaCadastrarCartaoCredito(mapResposta.get("errors")!= null, (String)mapResposta.get("id"));
+	return resposta;
     }
     
     /**
@@ -50,6 +51,18 @@ public class PagarMeService {
 	    this.valorEmDecimais = valorEmDecimais;
 	}
     }
+    
+   public static class RespostaCadastrarCartaoCredito {
+	   public boolean isErro;
+	   public String cardId;
+	   
+	   public RespostaCadastrarCartaoCredito(boolean isErro, String cardId) {
+		this.isErro = isErro;
+		this.cardId = cardId;
+	   }
+   }
+    
+    
     
     public static class RespostaEfetuarPagamentoNoCartaoCredito {
 	public boolean isErroInterno;
