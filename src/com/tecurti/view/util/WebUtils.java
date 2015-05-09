@@ -1160,6 +1160,8 @@ public class WebUtils {
     }
     public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
 	
+	int timeout = 120000;
+	
 	// ----------------
 	List<Object> listParametros = new ArrayList<>();
 	for (Map.Entry<String, Object> param : params.entrySet()) {
@@ -1192,7 +1194,7 @@ public class WebUtils {
             conn.setRequestMethod(HttpMethod.POST.toString());
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             conn.setRequestProperty("Connection", "Keep-Alive");
-            conn.setConnectTimeout(120000);
+	    conn.setConnectTimeout(timeout);
             
             DataOutputStream request = new DataOutputStream(conn.getOutputStream());
             
@@ -1242,7 +1244,7 @@ public class WebUtils {
 		conn.setDoOutput(true);
 		conn.setRequestProperty("Cache-Control", "no-cache");
 		conn.setRequestMethod(method.toString());
-		conn.setConnectTimeout(50000);
+		conn.setConnectTimeout(timeout);
 		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
 		conn.getOutputStream().write(queryStringAsBytes);
@@ -1251,7 +1253,7 @@ public class WebUtils {
 		
 	        conn = (HttpURLConnection)new URL(urlComQueryString).openConnection();
 	        conn.setRequestMethod(method.toString());
-	        conn.setConnectTimeout(50000);
+	        conn.setConnectTimeout(timeout);
 	        conn.setDoOutput(true);
 	        conn.setRequestProperty("Cache-Control", "no-cache");
 	    }

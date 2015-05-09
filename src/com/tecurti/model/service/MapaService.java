@@ -79,9 +79,9 @@ public class MapaService {
 	Estado paraiba 		= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PARAIBA);
 	Estado parana 		= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PARANA);
 	Estado pernambuco 	= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PERNAMBUCO);
-	Estado piaui 		= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PERNAMBUCO);
-	Estado rioDeJaneiro 	= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PIAUI);
-	Estado rioGrandeDoNorte = findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RIODEJANEIRO);
+	Estado piaui 		= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_PIAUI);
+	Estado rioDeJaneiro 	= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RIODEJANEIRO);
+	Estado rioGrandeDoNorte = findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RIOGRANDEDONORTE);
 	Estado rioGrandeDoSul 	= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RIOGRANDEDOSUL);
 	Estado rondonia 	= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RONDONIA);
 	Estado roraima 		= findEstado(MapaServiceConstantes.ID_ESTADO_BRASIL_RORAIMA);
@@ -105,6 +105,9 @@ public class MapaService {
 	}
 	
 	// ----------------
+	acre.getZoom().addPontoNoMapa(nivel2, amazonas);
+	acre.getZoom().addPontoNoMapa(nivel2, rondonia);
+	
 	alagoas.getZoom().addPontoNoMapa(nivel2, pernambuco);
 	alagoas.getZoom().addPontoNoMapa(nivel2, bahia);
 	alagoas.getZoom().addPontoNoMapa(nivel2, sergipe);
