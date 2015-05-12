@@ -86,6 +86,13 @@ public class ZoomNoMapa {
 	
 	return listZoom.get(nivel-1);
     }
+
+    public boolean isNivelExiste(int proximoZoom) {
+	if (listZoom.isEmpty()) {
+	    return false;
+	}
+	return proximoZoom >= 0 && proximoZoom <= getTotalNiveis();
+    }
 }
 
 

@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -905,6 +906,30 @@ public class ModelUtils {
     }
     public static boolean isEmpty(List<Long> list) {
 	return list == null || list.isEmpty();
+    }
+
+    public static String encodeUTF8(String string) {
+	if (string == null) {
+	    return null;
+	}
+	try {
+	    return URLEncoder.encode(string, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+    
+    public static String decodeUTF8(String string) {
+	if (string == null) {
+	    return null;
+	}
+	try {
+	    return URLDecoder.decode(string, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    e.printStackTrace();
+	    return null;
+	}
     }
     
 }
