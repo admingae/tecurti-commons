@@ -1,5 +1,8 @@
 package com.tecurti.model.persistencia.dao.hibernate;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -50,6 +53,16 @@ public class HibernateUtil {
 	Configuration configuration = ExtensionConfig.createHibernateConfiguration();
 	ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();        
 	sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+    }
+
+    public static Calendar timestampToCalendar(Timestamp timestamp) {
+	if (timestamp == null) {
+	    return null;
+	}
+	
+	Calendar calendar = Calendar.getInstance();
+	calendar.setTimeInMillis(timestamp.getTime());
+	return calendar;
     }
 
 }

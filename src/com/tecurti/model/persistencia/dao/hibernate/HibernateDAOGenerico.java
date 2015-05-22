@@ -5,6 +5,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -12,6 +13,8 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
+
+import com.tecurti.model.persistencia.dao.hibernate.resulttransformer.ResultTransformerForMap;
 
 public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 
@@ -179,6 +182,12 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return query.list();
     }
     
+    public List<Map<String, Object>> executeSQLQueryForMapResult(String sql, DAOGenericoParameter... parameters) throws Exception {
+	return executeSQLQueryForMapResult(null, sql, parameters);
+    }
+    public List<Map<String, Object>> executeSQLQueryForMapResult(Session session, String sql, DAOGenericoParameter... parameters) throws Exception {
+	return executeSQLQueryForDifferentResultType(session, sql, ResultTransformerForMap.RESULT_TRANSFORMER, parameters);
+    }
     public List executeSQLQueryForDifferentResultType(String sql, ResultTransformer resultTransformer, DAOGenericoParameter... parameters) throws Exception {
 	return executeSQLQueryForDifferentResultType(null, sql, resultTransformer, parameters);
     }
