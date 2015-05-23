@@ -588,6 +588,9 @@ public class ModelUtils {
     }
 
     public static Calendar getCalendarFromDataMilli(Long dataMilli) {
+	if (dataMilli == null) {
+	    return null;
+	}
 	Calendar calendar = new GregorianCalendar();
 	calendar.setTimeInMillis(dataMilli);
 	return calendar;
