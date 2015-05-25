@@ -60,6 +60,24 @@ public class ModelUtils {
 	    }
 	}
     }
+    
+    public static double regraDe3(double itemBase, double valorItemBase, double itemParaDescobriValor) {
+	
+	BigDecimal itemBaseBigDecimal = new BigDecimal(itemBase);
+	BigDecimal valorItemBaseBigDecimal = new BigDecimal(valorItemBase);
+	BigDecimal itemParaDescobriValorBigDecimal = new BigDecimal(itemParaDescobriValor);
+	
+	/*
+	 * itemBase >>>>> valorItemBase
+	 * itemParaDescobriValor >>>>> x 
+	 * 
+	 * x * itemBase = valorItemBase * itemParaDescobriValor 
+	 * x = (valorItemBase * itemParaDescobriValor) / itemBase
+	 */
+	return valorItemBaseBigDecimal.multiply(itemParaDescobriValorBigDecimal).divide(itemBaseBigDecimal).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	//return (valorItemBase * itemParaDescobriValor) / itemBase;
+    }
+    
     public static int converterValorMonetarioDeDecimalParaCentavos(BigDecimal valorEmDecimais) {
 	BigDecimal valorCom2CasasDecimais = valorEmDecimais.setScale(2, RoundingMode.HALF_UP);
 	BigDecimal valorCentavos = valorCom2CasasDecimais.multiply(new BigDecimal(100));
