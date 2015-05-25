@@ -63,9 +63,9 @@ public class ModelUtils {
     
     public static double regraDe3(double itemBase, double valorItemBase, double itemParaDescobriValor) {
 	
-	BigDecimal itemBaseBigDecimal = new BigDecimal(itemBase);
-	BigDecimal valorItemBaseBigDecimal = new BigDecimal(valorItemBase);
-	BigDecimal itemParaDescobriValorBigDecimal = new BigDecimal(itemParaDescobriValor);
+	BigDecimal itemBaseBigDecimal = new BigDecimal(itemBase).setScale(2, RoundingMode.HALF_UP);
+	BigDecimal valorItemBaseBigDecimal = new BigDecimal(valorItemBase).setScale(2, RoundingMode.HALF_UP);
+	BigDecimal itemParaDescobriValorBigDecimal = new BigDecimal(itemParaDescobriValor).setScale(2, RoundingMode.HALF_UP);
 	
 	/*
 	 * itemBase >>>>> valorItemBase
@@ -74,9 +74,16 @@ public class ModelUtils {
 	 * x * itemBase = valorItemBase * itemParaDescobriValor 
 	 * x = (valorItemBase * itemParaDescobriValor) / itemBase
 	 */
-	return valorItemBaseBigDecimal.multiply(itemParaDescobriValorBigDecimal).divide(itemBaseBigDecimal).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	return valorItemBaseBigDecimal.multiply(itemParaDescobriValorBigDecimal).setScale(2, RoundingMode.HALF_UP).divide(itemBaseBigDecimal, 2, RoundingMode.HALF_UP).doubleValue();
 	//return (valorItemBase * itemParaDescobriValor) / itemBase;
     }
+    
+    public static void main(String[] args) {
+	BigDecimal a = new BigDecimal(0.333);
+	BigDecimal b = new BigDecimal(3.0);
+	System.err.println(a.multiply(b).setScale(2, RoundingMode.HALF_UP).divide(b, 2, RoundingMode.HALF_UP));
+    } 
+    
     
     public static int converterValorMonetarioDeDecimalParaCentavos(BigDecimal valorEmDecimais) {
 	BigDecimal valorCom2CasasDecimais = valorEmDecimais.setScale(2, RoundingMode.HALF_UP);
