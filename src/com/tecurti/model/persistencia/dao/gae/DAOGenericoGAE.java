@@ -584,6 +584,10 @@ public abstract class DAOGenericoGAE<T extends EntityGae, AtributosDaClasse> {
 	return (Class<T>) ((ParameterizedType) directSubclass.getGenericSuperclass()).getActualTypeArguments()[0];
     }
     
+    public boolean exists(Key key, DatastoreService datastore, Transaction txn) {
+	return findById(key, datastore, txn) != null;
+    }
+    
 }
 
 
