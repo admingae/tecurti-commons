@@ -959,6 +959,12 @@ public class ModelUtils {
 	    return null;
 	}
     }
+
+    public static Calendar getDataAdicionandoTempo(GregorianCalendar calendarInicial, int totalTempoParaAdicionar, int tipoCampo) {
+	Calendar calendarClone = (Calendar) calendarInicial.clone();
+	calendarClone.add(tipoCampo, totalTempoParaAdicionar);
+	return calendarClone;
+    }
     
 }
 
