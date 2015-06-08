@@ -2,15 +2,22 @@ package com.tecurti.model.service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.tecurti.model.entidades.TipoErroCommons;
 import com.tecurti.model.utils.ModelUtils;
 import com.tecurti.view.util.WebUtils;
 import com.tecurti.view.util.WebUtils.HttpMethod;
 
 public class PagarMeService {
 
-    public String cadastrarCartao(String cardHash, String apiKey) throws Exception {
+    public static class RespostaCadastrarCartao {
+	boolean isErro;
+	TipoErroCommons tipoErro;
+	public String cardId; 
+    }
+    public RespostaCadastrarCartao cadastrarCartao(String cardHash, String apiKey) throws Exception {
 	String url = "https://api.pagar.me/1/cards";
 	Map<String, Object> map = new HashMap<String, Object>();
 	map.put("api_key", apiKey);
@@ -19,7 +26,25 @@ public class PagarMeService {
 	String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
 	Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
 	
-	return (String) mapResposta.get("id");
+	RespostaCadastrarCartao resposta = new RespostaCadastrarCartao();
+	List<Map<String, Object>> list = (List<Map<String, Object>>) mapResposta.get("errors");
+	if (list == null || list.isEmpty()) {
+	    resposta.isErro = false;
+	    resposta.cardId = (String) mapResposta.get("id");
+	    return resposta;
+	} else {
+	    resposta.isErro = true;
+	    Map<String, Object> erro = list.get(0);
+	    
+	    String tipoErro = (String) erro.get("parameter_name");
+	    if ("card_expiration_date".equalsIgnoreCase(tipoErro)) {
+		resposta.tipoErro = TipoErroCommons.CARTAO_CREDITO_DATA_EXPIRACAO_INVALIDA;
+		return resposta;
+	    } else {
+		resposta.tipoErro = TipoErroCommons.CARTAO_CREDITO_ERRO_DESCONHECIDO_CARD_ID;
+		return resposta;
+	    }
+	}
     }
     
     /**
