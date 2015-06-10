@@ -446,6 +446,11 @@ public class UtilsGaeDAO {
 	return list;
     }
     
+    public static <T> T stringToEnum(Class<T> classeEnumerado, Entity entity, String nomePropriedade) {
+	Object valor = entity.getProperty(nomePropriedade);
+	return stringToEnum(classeEnumerado, valor);
+    }
+    
     public static <T> T stringToEnum(Class<T> classeEnumerado, Object enumeradoAsObject) {
 	if (enumeradoAsObject == null || enumeradoAsObject.toString().isEmpty()) {
 	    return null;
@@ -467,7 +472,7 @@ public class UtilsGaeDAO {
 	}
 	return listIds;
     }
-    
+
 }
 
 
