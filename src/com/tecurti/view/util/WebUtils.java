@@ -1159,6 +1159,10 @@ public class WebUtils {
 	public String value;
     }
     public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
+	byte[] respostaAsBytes = fazerChamadaWebserviceAsBytes(url, method, params);
+	return new String(respostaAsBytes);
+    }
+    public static byte[] fazerChamadaWebserviceAsBytes(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
 	
 	int timeout = 120000;
 	
@@ -1262,7 +1266,7 @@ public class WebUtils {
 	// ----------------
         Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
-	return new String(respostaAsBytes);
+	return respostaAsBytes;
     }
 
     private static boolean isMultipart(List listParametros) {
