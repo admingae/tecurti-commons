@@ -1158,11 +1158,16 @@ public class WebUtils {
 	public String name;
 	public String value;
     }
-    public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
+    public static String fazerChamadaWebservice(String url, HttpMethod method, Map<String,Object> params) throws Exception {
 	byte[] respostaAsBytes = fazerChamadaWebserviceAsBytes(url, method, params);
 	return new String(respostaAsBytes);
     }
-    public static byte[] fazerChamadaWebserviceAsBytes(String url, HttpMethod method, Map<String,Object> params) throws MalformedURLException, IOException, SocketTimeoutException {
+    public static Map<String, Object> fazerChamadaWebserviceAsJson(String url, HttpMethod method, Map<String,Object> params) throws Exception {
+	String respostaAsStringJson = fazerChamadaWebservice(url, method, params);
+	Map<String, Object> mapResposta = mapJsonDeserializer.deserialize(respostaAsStringJson);
+	return mapResposta;
+    }
+    public static byte[] fazerChamadaWebserviceAsBytes(String url, HttpMethod method, Map<String,Object> params) throws Exception {
 	
 	int timeout = 120000;
 	
