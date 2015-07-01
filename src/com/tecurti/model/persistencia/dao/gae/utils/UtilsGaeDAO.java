@@ -441,7 +441,10 @@ public class UtilsGaeDAO {
     public static <T> List<T> listStringToListEnum(Class<T> classeEnumerado, List<String> listEnumeradoAsString) {
 	List<T> list = new ArrayList<>();
 	for (String string : listEnumeradoAsString) {
-	    list.add(stringToEnum(classeEnumerado, string));
+	    T valorEnum = stringToEnum(classeEnumerado, string);
+	    if (valorEnum != null) {
+		list.add(valorEnum);
+	    } 
 	}
 	return list;
     }
