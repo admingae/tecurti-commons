@@ -1273,6 +1273,113 @@ public class WebUtils {
 	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
 	return respostaAsBytes;
     }
+    
+    public static byte[] fazerChamadaGcm(String url, HttpMethod method, Map<String,Object> params) throws Exception {
+	
+	int timeout = 120000;
+	
+	// ----------------
+	List<Object> listParametros = new ArrayList<>();
+	for (Map.Entry<String, Object> param : params.entrySet()) {
+	    Object value = param.getValue();
+	    if (value == null) {
+		continue;
+	    }
+	    if (value instanceof UploadedFile) {
+		listParametros.add(value);
+	    } else {
+		ParametroSimplesWebService parametro = new ParametroSimplesWebService();
+		parametro.name = URLEncoder.encode(param.getKey(), "UTF-8");
+		parametro.value = URLEncoder.encode(String.valueOf(value), "UTF-8");
+		listParametros.add(parametro);
+	    }
+	}
+	
+	// ----------------
+	HttpURLConnection conn = null;
+	boolean isMultipart = isMultipart(listParametros);
+	if (isMultipart) {
+	    
+	    String crlf = "\r\n";
+	    String twoHyphens = "--";
+	    String boundary =  "*****";
+	    
+	    conn = (HttpURLConnection)new URL(url).openConnection();
+	    conn.setDoOutput(true);
+	    conn.setRequestProperty("Cache-Control", "no-cache");
+	    conn.setRequestMethod(HttpMethod.POST.toString());
+	    conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+	    conn.setRequestProperty("Connection", "Keep-Alive");
+	    conn.setConnectTimeout(timeout);
+	    
+	    DataOutputStream request = new DataOutputStream(conn.getOutputStream());
+	    
+	    for (Object object : listParametros) {
+		request.writeBytes(crlf + twoHyphens + boundary);
+		
+		if (object instanceof ParametroSimplesWebService) {
+		    ParametroSimplesWebService paramSimples = (ParametroSimplesWebService) object;
+		    
+		    request.writeBytes(crlf + "Content-Disposition: form-data; name=\""+paramSimples.name+"\"");
+		    request.writeBytes(crlf + crlf);
+		    request.writeBytes(paramSimples.value);
+		    
+		} else {
+		    UploadedFile uploadedFile = (UploadedFile) object;
+		    String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
+		    String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
+		    
+		    request.writeBytes(crlf + "Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
+		    request.writeBytes(crlf + crlf);
+		    request.write(uploadedFile.bytes);
+		}
+		
+	    }
+	    
+	    request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
+	    request.flush();
+	    request.close();
+	    
+	} else {
+	    StringBuilder queryString = new StringBuilder();
+	    for (Object object : listParametros) {
+		ParametroSimplesWebService param = (ParametroSimplesWebService) object;
+		
+		if (queryString.length() != 0){
+		    queryString.append('&');
+		}
+		queryString.append(param.name);
+		queryString.append('=');
+		queryString.append(param.value);
+	    }
+	    byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
+	    
+	    // ----------------
+	    if (method == HttpMethod.POST) {
+		conn = (HttpURLConnection)new URL(url).openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestProperty("Cache-Control", "no-cache");
+		conn.setRequestMethod(method.toString());
+		conn.setConnectTimeout(timeout);
+		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
+		conn.getOutputStream().write(queryStringAsBytes);
+	    } else {
+		String urlComQueryString = url + "?" + new String(queryStringAsBytes);
+		
+		conn = (HttpURLConnection)new URL(urlComQueryString).openConnection();
+		conn.setRequestMethod(method.toString());
+		conn.setConnectTimeout(timeout);
+		conn.setDoOutput(true);
+		conn.setRequestProperty("Cache-Control", "no-cache");
+	    }
+	}
+	
+	// ----------------
+	Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
+	return respostaAsBytes;
+    }
 
     private static boolean isMultipart(List listParametros) {
 	for (Object object : listParametros) {
