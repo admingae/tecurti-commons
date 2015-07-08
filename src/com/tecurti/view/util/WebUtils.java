@@ -986,9 +986,6 @@ public class WebUtils {
 	    System.err.println((i+1) + "- '" + string + "'");
 	}
     }*/
-    public static void main(String[] args) {
-	System.err.print(StringEscapeUtils.escapeHtml4("Usuário ou senha inválido"));
-    }
     
     public static String toStringArrayTitlesEmoticonParaHtml(String[] arrayString) {
 	
@@ -1277,7 +1274,30 @@ public class WebUtils {
     
     public static class ConteudoGcm {
 	public List<String> listRegistrationIds = new ArrayList<>();
-	public Map<String, Object> data = new HashMap<>();
+	public Map<String, Object> dadosParaEnviar = new HashMap<>();
+    }
+    
+    public static <X> List<List<X>> quebrarListsEmVariasSublists(List<X> list, int tamanhoDeCadaSublista) {
+	
+	List<List<X>> listReturn = new ArrayList<>();
+	
+	int indice = 0;
+	while(true) {
+	    int indiceFinalNecessario = indice + tamanhoDeCadaSublista;
+	    if (indiceFinalNecessario > list.size()) {
+		indiceFinalNecessario = list.size();
+	    }
+	    
+	    List<X> subList = list.subList(indice, indiceFinalNecessario);
+	    listReturn.add(subList);
+	    
+	    indice = indiceFinalNecessario;
+	    if (indice >= list.size()) {
+		break;
+	    }
+	}
+	
+	return listReturn;
     }
     
     private static class AlteracaoRegistrationId {
@@ -1290,22 +1310,39 @@ public class WebUtils {
 	}
     }
     public static class RespostaFazerChamadaGcm {
+	public boolean isErro = false;
 	
-	public String multicastId;
-	public int totalSuccess;
-	public int totalFailure;
+	public List<String> listMulticastId = new ArrayList<String>();
+	public int totalSuccess = 0;
+	public int totalFailure = 0;
 	
 	/*
 	 * Canonical é quando um registration_id foi alterado por outro
 	 */
-	public int totalCanonicalIds;
+	public int totalCanonicalIds = 0;
 	public List<AlteracaoRegistrationId> listAlteracoesRegistrationId = new ArrayList<>();
 	public List<String> listRegistrationIdParaRemover = new ArrayList<>();
 	
 	public TipoErroCommons tipoErro;
 	public int responseCode;
-	public boolean isErro;
 	public String descricaoResposta;
+	
+	public void merge(RespostaFazerChamadaGcm resposta) {
+	    
+	    if (resposta.isErro) {
+		isErro = true;
+		tipoErro = resposta.tipoErro;
+		responseCode = resposta.responseCode;
+		descricaoResposta = resposta.descricaoResposta;
+	    } else {
+		listMulticastId.addAll(resposta.listMulticastId);
+		totalSuccess += resposta.totalSuccess;
+		totalFailure += resposta.totalFailure;
+		totalCanonicalIds  += resposta.totalCanonicalIds;
+		listAlteracoesRegistrationId.addAll(resposta.listAlteracoesRegistrationId);
+		listRegistrationIdParaRemover.addAll(resposta.listRegistrationIdParaRemover);
+	    }
+	}
     }
     
     /*
@@ -1314,11 +1351,23 @@ public class WebUtils {
      * http://hmkcode.com/android-google-cloud-messaging-tutorial/
      */
     public static RespostaFazerChamadaGcm fazerChamadaGcm(ConteudoGcm conteudo, String apiKey) throws Exception {
+	RespostaFazerChamadaGcm respostaMerged = new RespostaFazerChamadaGcm();
+	
+	Map<String, Object> dadosParaEnviar = conteudo.dadosParaEnviar;
+	List<List<String>> sublistasDeRegistrationId = quebrarListsEmVariasSublists(conteudo.listRegistrationIds, 1000);
+	for (List<String> listRegistrationId : sublistasDeRegistrationId) {
+	    RespostaFazerChamadaGcm resposta = fazerChamadaGcm(dadosParaEnviar, listRegistrationId, apiKey);
+	    respostaMerged.merge(resposta);
+	}
+	
+	return respostaMerged;
+    }
+    private static RespostaFazerChamadaGcm fazerChamadaGcm(Map<String, Object> dadosParaEnviar, List<String> listRegistrationId, String apiKey) throws Exception {
 
 	// ----------------
 	Map<String, Object> mapRequest = new HashMap<>();
-	mapRequest.put("data", conteudo.data);
-	mapRequest.put("registration_ids", conteudo.listRegistrationIds);
+	mapRequest.put("data", dadosParaEnviar);
+	mapRequest.put("registration_ids", listRegistrationId);
 	String dataAsJson = jsonSerializer.deepSerialize(mapRequest);
 	byte[] dataJsongAsBytes = dataAsJson.toString().getBytes("UTF-8");
 
@@ -1348,7 +1397,7 @@ public class WebUtils {
 	    resposta.isErro = false;
 	    
 	    Map<String, Object> mapResposta = mapJsonDeserializer.deserialize(respostaAsString);
-	    resposta.multicastId = mapResposta.get("multicast_id").toString();
+	    resposta.listMulticastId.add(mapResposta.get("multicast_id").toString());
 	    resposta.totalSuccess = Integer.parseInt(mapResposta.get("success").toString());
 	    resposta.totalFailure = Integer.parseInt(mapResposta.get("failure").toString());
 	    resposta.totalCanonicalIds = Integer.parseInt(mapResposta.get("canonical_ids").toString());
@@ -1367,13 +1416,13 @@ public class WebUtils {
 			boolean ehUmErroQuePodeTentarNovamenteMaisTarde = error.equalsIgnoreCase("Unavailable");
 			boolean deveRemoverRegistrationId = ehUmErroQuePodeTentarNovamenteMaisTarde == false;
 			if (deveRemoverRegistrationId) {
-			    String registrationIdEnviado = conteudo.listRegistrationIds.get(i);
+			    String registrationIdEnviado = listRegistrationId.get(i);
 			    resposta.listRegistrationIdParaRemover.add(registrationIdEnviado);
 			}
 		    } else {
 			boolean isTrocouRegistrationId = ModelUtils.isNotEmptyTrim(registration_id);
 			if (isTrocouRegistrationId) {
-			    String registrationIdEnviado = conteudo.listRegistrationIds.get(i);
+			    String registrationIdEnviado = listRegistrationId.get(i);
 			    resposta.listAlteracoesRegistrationId.add(new AlteracaoRegistrationId(registrationIdEnviado, registration_id));
 			}
 		    }
