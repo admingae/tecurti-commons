@@ -51,6 +51,7 @@ import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 import com.tecurti.model.entidades.Dimension;
+import com.tecurti.model.entidades.TipoErroCommons;
 import com.tecurti.model.utils.ModelUtils;
 
 import flexjson.JSONDeserializer;
@@ -1274,111 +1275,119 @@ public class WebUtils {
 	return respostaAsBytes;
     }
     
-    public static byte[] fazerChamadaGcm(String url, HttpMethod method, Map<String,Object> params) throws Exception {
-	
-	int timeout = 120000;
-	
-	// ----------------
-	List<Object> listParametros = new ArrayList<>();
-	for (Map.Entry<String, Object> param : params.entrySet()) {
-	    Object value = param.getValue();
-	    if (value == null) {
-		continue;
-	    }
-	    if (value instanceof UploadedFile) {
-		listParametros.add(value);
-	    } else {
-		ParametroSimplesWebService parametro = new ParametroSimplesWebService();
-		parametro.name = URLEncoder.encode(param.getKey(), "UTF-8");
-		parametro.value = URLEncoder.encode(String.valueOf(value), "UTF-8");
-		listParametros.add(parametro);
-	    }
+    public static class ConteudoGcm {
+	public List<String> listRegistrationIds = new ArrayList<>();
+	public Map<String, Object> data = new HashMap<>();
+    }
+    
+    private static class AlteracaoRegistrationId {
+	public String registrationIdAntes;
+	public String registrationIdAtual;
+	public AlteracaoRegistrationId(String registrationIdAntes, String registrationIdAtual) {
+	    super();
+	    this.registrationIdAntes = registrationIdAntes;
+	    this.registrationIdAtual = registrationIdAtual;
 	}
+    }
+    public static class RespostaFazerChamadaGcm {
 	
+	public String multicastId;
+	public int totalSuccess;
+	public int totalFailure;
+	
+	/*
+	 * Canonical é quando um registration_id foi alterado por outro
+	 */
+	public int totalCanonicalIds;
+	public List<AlteracaoRegistrationId> listAlteracoesRegistrationId = new ArrayList<>();
+	public List<String> listRegistrationIdParaRemover = new ArrayList<>();
+	
+	public TipoErroCommons tipoErro;
+	public int responseCode;
+	public boolean isErro;
+	public String descricaoResposta;
+    }
+    
+    /*
+     * https://developers.google.com/cloud-messaging/server-ref#table4
+     * https://developers.google.com/cloud-messaging/http
+     * http://hmkcode.com/android-google-cloud-messaging-tutorial/
+     */
+    public static RespostaFazerChamadaGcm fazerChamadaGcm(ConteudoGcm conteudo, String apiKey) throws Exception {
+
 	// ----------------
-	HttpURLConnection conn = null;
-	boolean isMultipart = isMultipart(listParametros);
-	if (isMultipart) {
-	    
-	    String crlf = "\r\n";
-	    String twoHyphens = "--";
-	    String boundary =  "*****";
-	    
-	    conn = (HttpURLConnection)new URL(url).openConnection();
-	    conn.setDoOutput(true);
-	    conn.setRequestProperty("Cache-Control", "no-cache");
-	    conn.setRequestMethod(HttpMethod.POST.toString());
-	    conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-	    conn.setRequestProperty("Connection", "Keep-Alive");
-	    conn.setConnectTimeout(timeout);
-	    
-	    DataOutputStream request = new DataOutputStream(conn.getOutputStream());
-	    
-	    for (Object object : listParametros) {
-		request.writeBytes(crlf + twoHyphens + boundary);
-		
-		if (object instanceof ParametroSimplesWebService) {
-		    ParametroSimplesWebService paramSimples = (ParametroSimplesWebService) object;
-		    
-		    request.writeBytes(crlf + "Content-Disposition: form-data; name=\""+paramSimples.name+"\"");
-		    request.writeBytes(crlf + crlf);
-		    request.writeBytes(paramSimples.value);
-		    
-		} else {
-		    UploadedFile uploadedFile = (UploadedFile) object;
-		    String attachmentName = URLEncoder.encode(uploadedFile.nomeParametro, "UTF-8");
-		    String attachmentFileName = URLEncoder.encode(uploadedFile.nomeArquivo, "UTF-8");
-		    
-		    request.writeBytes(crlf + "Content-Disposition: form-data; name=\"" + attachmentName + "\"; filename=\"" + attachmentFileName + "\"");
-		    request.writeBytes(crlf + crlf);
-		    request.write(uploadedFile.bytes);
-		}
-		
-	    }
-	    
-	    request.writeBytes(crlf + twoHyphens + boundary + twoHyphens);
-	    request.flush();
-	    request.close();
-	    
-	} else {
-	    StringBuilder queryString = new StringBuilder();
-	    for (Object object : listParametros) {
-		ParametroSimplesWebService param = (ParametroSimplesWebService) object;
-		
-		if (queryString.length() != 0){
-		    queryString.append('&');
-		}
-		queryString.append(param.name);
-		queryString.append('=');
-		queryString.append(param.value);
-	    }
-	    byte[] queryStringAsBytes = queryString.toString().getBytes("UTF-8");
-	    
-	    // ----------------
-	    if (method == HttpMethod.POST) {
-		conn = (HttpURLConnection)new URL(url).openConnection();
-		conn.setDoOutput(true);
-		conn.setRequestProperty("Cache-Control", "no-cache");
-		conn.setRequestMethod(method.toString());
-		conn.setConnectTimeout(timeout);
-		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
-		conn.getOutputStream().write(queryStringAsBytes);
-	    } else {
-		String urlComQueryString = url + "?" + new String(queryStringAsBytes);
-		
-		conn = (HttpURLConnection)new URL(urlComQueryString).openConnection();
-		conn.setRequestMethod(method.toString());
-		conn.setConnectTimeout(timeout);
-		conn.setDoOutput(true);
-		conn.setRequestProperty("Cache-Control", "no-cache");
-	    }
-	}
-	
+	Map<String, Object> mapRequest = new HashMap<>();
+	mapRequest.put("data", conteudo.data);
+	mapRequest.put("registration_ids", conteudo.listRegistrationIds);
+	String dataAsJson = jsonSerializer.deepSerialize(mapRequest);
+	byte[] dataJsongAsBytes = dataAsJson.toString().getBytes("UTF-8");
+
+	// ----------------
+	URL url = new URL("https://gcm-http.googleapis.com/gcm/send");
+	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	conn.setDoOutput(true);
+	conn.setConnectTimeout(120000);
+	conn.setRequestMethod("POST");
+	conn.setRequestProperty("Cache-Control", "no-cache");
+	conn.setRequestProperty("Content-Type", "application/json");
+	conn.setRequestProperty("Authorization", "key="+apiKey);
+	conn.setRequestProperty("Content-Length", String.valueOf(dataJsongAsBytes.length));
+	conn.getOutputStream().write(dataJsongAsBytes);
+
 	// ----------------
 	Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
-	return respostaAsBytes;
+	int responseCode = conn.getResponseCode();
+	String respostaAsString = new String(respostaAsBytes);
+	
+	// ----------------
+	RespostaFazerChamadaGcm resposta = new RespostaFazerChamadaGcm();
+	
+	boolean isSucesso = responseCode == 200;
+	if (isSucesso) {
+	    resposta.isErro = false;
+	    
+	    Map<String, Object> mapResposta = mapJsonDeserializer.deserialize(respostaAsString);
+	    resposta.multicastId = mapResposta.get("multicast_id").toString();
+	    resposta.totalSuccess = Integer.parseInt(mapResposta.get("success").toString());
+	    resposta.totalFailure = Integer.parseInt(mapResposta.get("failure").toString());
+	    resposta.totalCanonicalIds = Integer.parseInt(mapResposta.get("canonical_ids").toString());
+	    
+	    boolean isTodasAsMensagensEnviadasComSucesso = resposta.totalFailure == 0 && resposta.totalCanonicalIds == 0;
+	    if (isTodasAsMensagensEnviadasComSucesso == false) {
+		List<Map<String, Object>> results = (List<Map<String, Object>>) mapResposta.get("results");
+		for (int i = 0; i < results.size(); i++) {
+		    Map<String, Object> r = results.get(i);
+		    String message_id = (String) r.get("message_id");
+		    String registration_id = (String) r.get("registration_id");
+		    String error = (String) r.get("error");
+		    
+		    boolean deuErro = ModelUtils.isEmptyTrim(message_id);
+		    if (deuErro) {
+			boolean ehUmErroQuePodeTentarNovamenteMaisTarde = error.equalsIgnoreCase("Unavailable");
+			boolean deveRemoverRegistrationId = ehUmErroQuePodeTentarNovamenteMaisTarde == false;
+			if (deveRemoverRegistrationId) {
+			    String registrationIdEnviado = conteudo.listRegistrationIds.get(i);
+			    resposta.listRegistrationIdParaRemover.add(registrationIdEnviado);
+			}
+		    } else {
+			boolean isTrocouRegistrationId = ModelUtils.isNotEmptyTrim(registration_id);
+			if (isTrocouRegistrationId) {
+			    String registrationIdEnviado = conteudo.listRegistrationIds.get(i);
+			    resposta.listAlteracoesRegistrationId.add(new AlteracaoRegistrationId(registrationIdEnviado, registration_id));
+			}
+		    }
+		}
+	    }
+	    
+	    return resposta;
+	} else {
+	    resposta.isErro = true;
+	    resposta.tipoErro = TipoErroCommons.ERRO_ACESSAR_WEBSERVICE;
+	    resposta.responseCode = responseCode;
+	    resposta.descricaoResposta = respostaAsString;
+	    return resposta;
+	}
     }
 
     private static boolean isMultipart(List listParametros) {
