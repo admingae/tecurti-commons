@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -966,6 +967,9 @@ public class ModelUtils {
 	return calendarClone;
     }
     
+    public static <T> List<T> newList(T... array) {
+	return Arrays.asList(array);
+    }
 }
 
 

@@ -1300,7 +1300,7 @@ public class WebUtils {
 	return listReturn;
     }
     
-    private static class AlteracaoRegistrationId {
+    public static class AlteracaoRegistrationId {
 	public String registrationIdAntes;
 	public String registrationIdAtual;
 	public AlteracaoRegistrationId(String registrationIdAntes, String registrationIdAtual) {
@@ -1350,17 +1350,17 @@ public class WebUtils {
      * https://developers.google.com/cloud-messaging/http
      * http://hmkcode.com/android-google-cloud-messaging-tutorial/
      */
-    public static RespostaFazerChamadaGcm fazerChamadaGcm(ConteudoGcm conteudo, String apiKey) throws Exception {
-	RespostaFazerChamadaGcm respostaMerged = new RespostaFazerChamadaGcm();
+    public static List<RespostaFazerChamadaGcm> fazerChamadaGcm(ConteudoGcm conteudo, String apiKey) throws Exception {
+	List<RespostaFazerChamadaGcm> listRespostas = new ArrayList<>();
 	
 	Map<String, Object> dadosParaEnviar = conteudo.dadosParaEnviar;
 	List<List<String>> sublistasDeRegistrationId = quebrarListsEmVariasSublists(conteudo.listRegistrationIds, 1000);
 	for (List<String> listRegistrationId : sublistasDeRegistrationId) {
 	    RespostaFazerChamadaGcm resposta = fazerChamadaGcm(dadosParaEnviar, listRegistrationId, apiKey);
-	    respostaMerged.merge(resposta);
+	    listRespostas.add(resposta);
 	}
 	
-	return respostaMerged;
+	return listRespostas;
     }
     private static RespostaFazerChamadaGcm fazerChamadaGcm(Map<String, Object> dadosParaEnviar, List<String> listRegistrationId, String apiKey) throws Exception {
 
