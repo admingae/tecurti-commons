@@ -1308,6 +1308,10 @@ public class WebUtils {
 	    this.registrationIdAntes = registrationIdAntes;
 	    this.registrationIdAtual = registrationIdAtual;
 	}
+	@Override
+	public String toString() {
+	    return "[registrationIdAntes=" + registrationIdAntes + ", registrationIdAtual=" + registrationIdAtual + "]";
+	}
     }
     public static class RespostaFazerChamadaGcm {
 	public boolean isErro = false;
@@ -1326,23 +1330,6 @@ public class WebUtils {
 	public TipoErroCommons tipoErro;
 	public int responseCode;
 	public String descricaoResposta;
-	
-	public void merge(RespostaFazerChamadaGcm resposta) {
-	    
-	    if (resposta.isErro) {
-		isErro = true;
-		tipoErro = resposta.tipoErro;
-		responseCode = resposta.responseCode;
-		descricaoResposta = resposta.descricaoResposta;
-	    } else {
-		listMulticastId.addAll(resposta.listMulticastId);
-		totalSuccess += resposta.totalSuccess;
-		totalFailure += resposta.totalFailure;
-		totalCanonicalIds  += resposta.totalCanonicalIds;
-		listAlteracoesRegistrationId.addAll(resposta.listAlteracoesRegistrationId);
-		listRegistrationIdParaRemover.addAll(resposta.listRegistrationIdParaRemover);
-	    }
-	}
     }
     
     /*
@@ -1393,6 +1380,7 @@ public class WebUtils {
 	RespostaFazerChamadaGcm resposta = new RespostaFazerChamadaGcm();
 	
 	boolean isSucesso = responseCode == 200;
+	resposta.responseCode = responseCode;
 	if (isSucesso) {
 	    resposta.isErro = false;
 	    
@@ -1433,7 +1421,6 @@ public class WebUtils {
 	} else {
 	    resposta.isErro = true;
 	    resposta.tipoErro = TipoErroCommons.ERRO_ACESSAR_WEBSERVICE;
-	    resposta.responseCode = responseCode;
 	    resposta.descricaoResposta = respostaAsString;
 	    return resposta;
 	}
@@ -1499,6 +1486,12 @@ public class WebUtils {
 	}
 	
 	return false;
+    }
+    
+    public static Map<String, Object> criarMapComParametrosDoRequestVerificandoTipoDoConteudo(HttpServletRequest request) throws Exception {
+	Map<String, Object> parametros = new HashMap<String, Object>();
+	popularObjetoComParametrosDoRequestVerificandoTipoDoConteudo(parametros, request);
+	return parametros;
     }
     public static void popularObjetoComParametrosDoRequestVerificandoTipoDoConteudo(Object object, HttpServletRequest request) throws Exception {
 	if (ServletFileUpload.isMultipartContent(request)) {
