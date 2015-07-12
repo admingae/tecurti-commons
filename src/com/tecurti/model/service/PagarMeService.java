@@ -27,7 +27,7 @@ public class PagarMeService {
      * @param cardId
      * @param apiKey
      * @param valorEmDecimais
-     * @param soft_descriptor DescriÃ§Ã£o que aparecerÃ¡ na fatura depois do nome da loja. MÃ¡ximo de 13 caracteres
+     * @param soft_descriptor Descrição que aparecerá na fatura depois do nome da loja. Máximo de 13 caracteres
      * @return
      * @throws Exception
      */
@@ -36,15 +36,15 @@ public class PagarMeService {
 	public String apiKey;
 	public BigDecimal valorEmDecimais;
 	
-	// DescriÃ§Ã£o que aparecerÃ¡ na fatura depois do nome da loja. MÃ¡ximo de 13 caracteres
+	// Descrição que aparecerá na fatura depois do nome da loja. Máximo de 13 caracteres
 	public String softDescriptor;
 	
 	public boolean capture = true;
 	
-	// VocÃª pode passar dados adicionais na criaÃ§Ã£o da transaÃ§Ã£o para posteriormente filtrar estas na nossa dashboard.
+	// Você pode passar dados adicionais na criação da transação para posteriormente filtrar estas na nossa dashboard.
 	public Map<String, String> metadata = new HashMap<String, String>();
 	
-	// Se o pagamento for boleto, o padrÃ£o Ã© 1
+	// Se o pagamento for boleto, o padrão é 1
 	public Integer installments;
 	public ParametrosEfetuarPagamentoNoCartaoCredito(String cardId, String apiKey, BigDecimal valorEmDecimais) {
 	    super();
@@ -72,7 +72,7 @@ public class PagarMeService {
 	public Integer idTransacao;
 	public StatusReasonTransacaoPagarMe statusReason;
 	
-	// Mensagem de resposta do adquirente referente ao status da transaÃ§Ã£o.
+	// Mensagem de resposta do adquirente referente ao status da transação.
 	public String acquirerResponseCode;
 	public String descErroInterno;
 	
@@ -153,24 +153,24 @@ public class PagarMeService {
 	ACQUIRER_TIMEOUT
     }
     /*
-     * Para cada atualizaÃ§Ã£o no processamento da transaÃ§Ã£o, esta propriedade serÃ¡ alterada, e o objeto 
-     * transaction retornado como resposta atravÃ©s da sua URL de postback ou apÃ³s o tÃ©rmino do processamento da aÃ§Ã£o atual. 
-     * Valores possÃ­veis: processing, authorized, paid, refunded, waiting_payment, pending_refund, refused
+     * Para cada atualização no processamento da transação, esta propriedade será alterada, e o objeto 
+     * transaction retornado como resposta através da sua URL de postback ou após o término do processamento da ação atual. 
+     * Valores possíveis: processing, authorized, paid, refunded, waiting_payment, pending_refund, refused
      * Bom dia Felipe,
      * 
-     * nÃ£o conheÃ§o o tipo de sistema que vocÃª estÃ¡ implementando, e os tipos de pagamento que vocÃª permite, entÃ£o falar o que Ã© certo e/ou errado pode ser relativo.
+     * não conheço o tipo de sistema que você está implementando, e os tipos de pagamento que você permite, então falar o que é certo e/ou errado pode ser relativo.
      * 
-     * No caso do pagamento por boleto, quando este Ã© criado a transaÃ§Ã£o fica com status waiting_payment atÃ© que o cliente pague o boleto, entÃ£o isso nÃ£o Ã© um erro.
+     * No caso do pagamento por boleto, quando este é criado a transação fica com status waiting_payment até que o cliente pague o boleto, então isso não é um erro.
      * 
-     * Se vocÃª utilizar uma url de postback (o que Ã© altamente recomendado), sempre que houver uma alteraÃ§Ã£o no status da transaÃ§Ã£o vocÃª serÃ¡ notificado, entÃ£o vocÃª pode refinar sua verificaÃ§Ã£o condicional com base nessas informaÃ§Ãµes (https://pagar.me/docs/api/#estados-das-transaes).
+     * Se você utilizar uma url de postback (o que é altamente recomendado), sempre que houver uma alteração no status da transação você será notificado, então você pode refinar sua verificação condicional com base nessas informações (https://pagar.me/docs/api/#estados-das-transaes).
      * 
-     * Quando vocÃª cria uma transaÃ§Ã£o com uma url de postback definida, o primeiro status retornado Ã© o processing, e a medida que a transaÃ§Ã£o Ã© processada vocÃª recebe os prÃ³ximos status.
+     * Quando você cria uma transação com uma url de postback definida, o primeiro status retornado é o processing, e a medida que a transação é processada você recebe os próximos status.
      * 
-     * Se vocÃª nÃ£o utilizar uma url de postback, caso a transaÃ§Ã£o demore mais tempo que o habitual para ser realizada, vocÃª pode perder a conexÃ£o com nosso sistema e dessa forma tratar como recusada uma transaÃ§Ã£o que seria capturada com sucesso.
+     * Se você não utilizar uma url de postback, caso a transação demore mais tempo que o habitual para ser realizada, você pode perder a conexão com nosso sistema e dessa forma tratar como recusada uma transação que seria capturada com sucesso.
      * 
-     * Sobre as informaÃ§Ãµes que vocÃª deve mostrar para seu cliente, isso Ã© um guia que nÃ£o temos definido neste momento. Pelo tipo de sistema que vocÃª estÃ¡ criando e seu pÃºblico, vocÃª deve analisar a melhor forma de comunicar com seu cliente, baseado nos status que vocÃª irÃ¡ receber.
+     * Sobre as informações que você deve mostrar para seu cliente, isso é um guia que não temos definido neste momento. Pelo tipo de sistema que você está criando e seu público, você deve analisar a melhor forma de comunicar com seu cliente, baseado nos status que você irá receber.
      * 
-     * Caso tenha mais dÃºvidas, estamos Ã  disposiÃ§Ã£o.
+     * Caso tenha mais dúvidas, estamos á  disposição.
      * 
      * Att,
      * 
@@ -178,24 +178,24 @@ public class PagarMeService {
      */
     public static enum StatusTransacaoPagarMe {
 
-	// quando Ã© feita alguma transaÃ§Ã£o de cartao de credito com url de postback retorna esse estado
+	// quando é feita alguma transação de cartao de credito com url de postback retorna esse estado
         PROCESSING, 
         
         AUTHORIZED, 
         
-        // transaÃ§Ã£o paga (autorizada e capturada).
+        // transação paga (autorizada e capturada).
         PAID, 
         
-        // transaÃ§Ã£o estornada.
+        // transação estornada.
         REFUNDED, 
         
-        // quando Ã© feita alguma transaÃ§Ã£o de boleto bancario retorna essa constante
+        // quando é feita alguma transação de boleto bancario retorna essa constante
         WAITING_PAYMENT, 
         
-        // transaÃ§Ã£o paga com boleto aguardando para ser estornada.
+        // transação paga com boleto aguardando para ser estornada.
         PENDING_REFUND, 
         
-        // transaÃ§Ã£o nÃ£o autorizada (acredito q seja para boleto ou cartao de credito).
+        // transação não autorizada (acredito q seja para boleto ou cartao de credito).
         REFUSED
     }
     

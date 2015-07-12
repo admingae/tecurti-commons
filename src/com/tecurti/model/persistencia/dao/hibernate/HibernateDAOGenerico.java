@@ -2,10 +2,8 @@ package com.tecurti.model.persistencia.dao.hibernate;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -24,6 +22,14 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	// ---------------------
 	return (Class<T>) ((ParameterizedType) directSubclass.getGenericSuperclass()).getActualTypeArguments()[0];
     }
+    
+    
+    public List<T> executeQueryWithLimitedResults(
+    	    String query,int maxResults, DAOGenericoParameter... parameters) throws Exception {
+    	// TODO Auto-generated method stub
+    	return this.executeQueryForDiferentType(this.getGenericsClass(), maxResults, query, parameters);
+        }
+    
     
     public static <T> T executeTransaction(HibernateSessionCommand<T> command) throws Exception {
 	
@@ -273,36 +279,39 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return executeQuery(null, hql, parameters);
     }
     public List<T> executeQuery(Session session, String hql, DAOGenericoParameter... parameters) throws Exception {
-	return executeQueryForDiferentType(session, getGenericsClass(), hql, parameters);
+	return executeQueryForDiferentType(session, getGenericsClass(),null, hql, parameters);
     }
 
     public <DiferentType> DiferentType executeQueryForDiferentTypeAndReturnUniqueResult(Class<DiferentType> type, String hql, DAOGenericoParameter... parameters ) throws Exception {
 	
-	List<DiferentType> resultList = executeQueryForDiferentType(type, hql, parameters);
+	List<DiferentType> resultList = executeQueryForDiferentType(type,null, hql, parameters);
 	return resultList.isEmpty() ? null : resultList.get(0);
     }
     
-    public <DiferentType> List<DiferentType> executeQueryForDiferentType(final Class<DiferentType> type, final String hql, final DAOGenericoParameter... parameters) throws Exception {
-	return executeQueryForDiferentType(null, type, hql, parameters);
+    public <DiferentType> List<DiferentType> executeQueryForDiferentType(final Class<DiferentType> type,Integer maxResults, final String hql, final DAOGenericoParameter... parameters) throws Exception {
+	return executeQueryForDiferentType(null, type,maxResults, hql, parameters);
     }
-    public <DiferentType> List<DiferentType> executeQueryForDiferentType(final Session session, final Class<DiferentType> type, final String hql, final DAOGenericoParameter... parameters) throws Exception {
+    public <DiferentType> List<DiferentType> executeQueryForDiferentType(final Session session, final Class<DiferentType> type,final Integer maxResults, final String hql, final DAOGenericoParameter... parameters) throws Exception {
 	
 	if (session == null) {
 	    return executeTransaction(new HibernateSessionCommand<List<DiferentType>>() {
 		public List<DiferentType> executeComRetorno(Session sess, Transaction transaction) {
-		    return doExecuteQueryForDiferentType(sess, type, hql, parameters);
+		    return doExecuteQueryForDiferentType(sess, type,maxResults, hql, parameters);
 		}
 	    });
 	} else {
-	    return doExecuteQueryForDiferentType(session, type, hql, parameters);
+	    return doExecuteQueryForDiferentType(session, type,maxResults, hql, parameters);
 	}
     }
     
-    private <DiferentType> List<DiferentType> doExecuteQueryForDiferentType(Session session, Class<DiferentType> type, String hql, DAOGenericoParameter... parameters ) {
+    private <DiferentType> List<DiferentType> doExecuteQueryForDiferentType(Session session, Class<DiferentType> type,Integer maxResults, String hql, DAOGenericoParameter... parameters ) {
 	
 	Query query = session.createQuery(hql);
 	for (DAOGenericoParameter param : parameters) {
 	    query.setParameter(param.getKey(), param.getValue());
+	}
+	if(maxResults != null){
+		query = query.setMaxResults(maxResults);
 	}
 	
 	List<DiferentType> list = query.list();
