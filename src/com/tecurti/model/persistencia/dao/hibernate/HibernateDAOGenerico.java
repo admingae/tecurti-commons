@@ -8,6 +8,7 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.transform.Transformers;
 
 public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 
@@ -157,10 +158,44 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	query.executeUpdate();
     }
     
+    public List<T> executeSQLQuery(final String sql,Class<T>transformedClass, final DAOGenericoParameter... parameters) throws Exception {
+    	return executeSQLQueryForUnmappedResult(null, sql,transformedClass, parameters);
+    }
+    
 
-    public List<T> executeSQLQuery(final String sql, final DAOGenericoParameter... parameters) throws Exception {
+    private List<T> executeSQLQueryForUnmappedResult(Session session, String sql,
+			Class<T> transformedClass, DAOGenericoParameter[] parameters) throws Exception {
+    	if (session == null) {
+    	    Object retorno = executeTransaction(new HibernateSessionCommand() {
+    		public Object executeComRetorno(Session sess, Transaction transaction) throws Exception {    
+    		    return doExecuteSQLQueryForUnmappedResult(sess, sql,transformedClass, parameters);
+    		}
+    	    });
+    	    return (List<T>) retorno;
+    	} else {
+    	    return doExecuteSQLQueryForUnmappedResult(session, sql,transformedClass, parameters);
+    	}
+	}
+
+
+	private List<T> doExecuteSQLQueryForUnmappedResult(Session session,
+			String sql,Class<T>transformedClass, DAOGenericoParameter... parameters) {
+		
+		
+		SQLQuery query = session.createSQLQuery(sql);
+		for (DAOGenericoParameter param : parameters) {
+		    query.setParameter(param.getKey(), param.getValue());
+		}
+		query.setResultTransformer(Transformers.aliasToBean(transformedClass));
+
+		return query.list();
+	}
+
+
+	public List<T> executeSQLQuery(final String sql, final DAOGenericoParameter... parameters) throws Exception {
 	return executeSQLQuery(null, sql, parameters);
     }
+    
     
     public List<T> executeSQLQuery(Session session, final String sql, final DAOGenericoParameter... parameters) throws Exception {
 	if (session == null) {
