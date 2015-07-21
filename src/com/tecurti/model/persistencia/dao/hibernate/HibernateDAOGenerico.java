@@ -26,11 +26,16 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     
     
     public List<T> executeQueryWithLimitedResults(
-    	    String query,int maxResults, DAOGenericoParameter... parameters) throws Exception {
-    	// TODO Auto-generated method stub
+    	    String query,Integer maxResults, DAOGenericoParameter... parameters) throws Exception {
+    	
     	return this.executeQueryForDiferentType(this.getGenericsClass(), maxResults, query, parameters);
         }
     
+    public List<T> executeQueryWithLimitedResults(
+    	    String query,Integer maxResults,Class<T>resultTransformer, DAOGenericoParameter... parameters) throws Exception {
+    	
+    	return executeSQLQueryForUnmappedResult(null, maxResults, query, resultTransformer, parameters);
+        }
     
     public static <T> T executeTransaction(HibernateSessionCommand<T> command) throws Exception {
 	
@@ -159,32 +164,35 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
     
     public List<T> executeSQLQuery(final String sql,Class<T>transformedClass, final DAOGenericoParameter... parameters) throws Exception {
-    	return executeSQLQueryForUnmappedResult(null, sql,transformedClass, parameters);
+    	return executeSQLQueryForUnmappedResult(null,null, sql,transformedClass, parameters);
     }
     
 
-    private List<T> executeSQLQueryForUnmappedResult(Session session, String sql,
+    private List<T> executeSQLQueryForUnmappedResult(Session session,Integer maxResults, String sql,
 			Class<T> transformedClass, DAOGenericoParameter[] parameters) throws Exception {
     	if (session == null) {
     	    Object retorno = executeTransaction(new HibernateSessionCommand() {
     		public Object executeComRetorno(Session sess, Transaction transaction) throws Exception {    
-    		    return doExecuteSQLQueryForUnmappedResult(sess, sql,transformedClass, parameters);
+    		    return doExecuteSQLQueryForUnmappedResult(sess, sql,maxResults,transformedClass, parameters);
     		}
     	    });
     	    return (List<T>) retorno;
     	} else {
-    	    return doExecuteSQLQueryForUnmappedResult(session, sql,transformedClass, parameters);
+    	    return doExecuteSQLQueryForUnmappedResult(session, sql,maxResults,transformedClass, parameters);
     	}
 	}
 
 
 	private List<T> doExecuteSQLQueryForUnmappedResult(Session session,
-			String sql,Class<T>transformedClass, DAOGenericoParameter... parameters) {
+			String sql,Integer maxResults,Class<T>transformedClass, DAOGenericoParameter... parameters) {
 		
 		
 		SQLQuery query = session.createSQLQuery(sql);
 		for (DAOGenericoParameter param : parameters) {
 		    query.setParameter(param.getKey(), param.getValue());
+		}
+		if(maxResults != null){
+			query.setMaxResults(maxResults);
 		}
 		query.setResultTransformer(Transformers.aliasToBean(transformedClass));
 
