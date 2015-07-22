@@ -430,6 +430,15 @@ public class MapaService {
 	return null;
     }
 
+    public static Estado findEstado(Long idPais, Long idEstado) {
+	
+	Pais pais = findPais(idPais);
+	if (pais != null) {
+	    return pais.findEstado(idEstado);
+	}
+	return null;
+    }
+
 }
 
 
