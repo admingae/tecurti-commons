@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -378,6 +379,22 @@ public class WebUtils {
 	estados.put("TO", "Tocantins");
 	return estados;*/
 	
+    }
+    
+    public static String toJavascriptObjectIncluindoCampos(Class classeContantes, String... camposParaIncluir) {
+	
+	
+	List<String> listCamposParaIncluir = Arrays.asList(camposParaIncluir);
+	
+	List<String> listCamposParaExcluir = new ArrayList<>();
+	for (Field field : classeContantes.getDeclaredFields()) {
+	    boolean isCamposParaExcluir = listCamposParaIncluir.contains(field.getName()) == false;
+	    if (isCamposParaExcluir) {
+		listCamposParaExcluir.add(field.getName());
+	    }
+	}
+	
+	return toJavascriptObject(classeContantes, listCamposParaExcluir.toArray(new String[]{}));
     }
     
     public static String toJavascriptObject(Class classeContantes, String... camposParaExcluir) {
