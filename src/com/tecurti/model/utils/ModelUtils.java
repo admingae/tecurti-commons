@@ -79,13 +79,6 @@ public class ModelUtils {
 	//return (valorItemBase * itemParaDescobriValor) / itemBase;
     }
     
-    public static void main(String[] args) {
-	BigDecimal a = new BigDecimal(0.333);
-	BigDecimal b = new BigDecimal(3.0);
-	System.err.println(a.multiply(b).setScale(2, RoundingMode.HALF_UP).divide(b, 2, RoundingMode.HALF_UP));
-    } 
-    
-    
     public static int converterValorMonetarioDeDecimalParaCentavos(BigDecimal valorEmDecimais) {
 	BigDecimal valorCom2CasasDecimais = valorEmDecimais.setScale(2, RoundingMode.HALF_UP);
 	BigDecimal valorCentavos = valorCom2CasasDecimais.multiply(new BigDecimal(100));
@@ -969,6 +962,19 @@ public class ModelUtils {
     
     public static <T> List<T> newList(T... array) {
 	return Arrays.asList(array);
+    }
+
+    public static String formatarDDMMYYYY_HHMMYYYY(GregorianCalendar calendar) {
+	SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	return dateFormat.format(calendar.getTime());
+    }
+    public static String formatarDDMMYYYY(GregorianCalendar calendar) {
+	SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+	return dateFormat.format(calendar.getTime());
+    }
+    
+    public static void main(String[] args) {
+	System.err.println(formatarDDMMYYYY(new GregorianCalendar()));
     }
 }
 
