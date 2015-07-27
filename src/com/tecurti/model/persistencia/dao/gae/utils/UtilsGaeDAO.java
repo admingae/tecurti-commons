@@ -114,7 +114,9 @@ public class UtilsGaeDAO {
     }
     
     public static Object transformarBlobEmObject(Blob blob) {
-	
+	if (blob == null) {
+	    return null;
+	}
 	try {
 	    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(blob.getBytes());
 	    ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
