@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -12,8 +11,6 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -1516,6 +1513,15 @@ public class WebUtils {
 	} else {
 	    WebUtils.popularObjectComParameters(object, request);
 	}	
+    }
+    
+    public static String appendParametrosGcsParaUrl(String url, int width, int height) {
+	boolean isQuadrada = width == height;
+	if (isQuadrada) {
+	    return url + "=s"+width+"-c";
+	} else {
+	    return url + "=-w"+width+"-h"+height;
+	}
     }
 }
 
