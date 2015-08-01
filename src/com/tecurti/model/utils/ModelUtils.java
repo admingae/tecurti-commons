@@ -593,17 +593,19 @@ public class ModelUtils {
 	return isEmptyTrim(valor) || equalsIn(valor, valoresParaComparar);
     }
 
-    public static String getResourseAsStreamAsString(String pathArquivo) {
+    public static byte[] getResourseAsStreamAsBytes(String pathArquivo) {
 	try {
 	    InputStream is = ModelUtils.class.getResourceAsStream(pathArquivo);
 	    byte[] bytes = new byte[is.available()];
 	    is.read(bytes);
-	    String asTexto = new String(bytes);
-	    return asTexto;
+	    return bytes;
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    throw new RuntimeException(e);
 	}
+    }
+    public static String getResourseAsStreamAsString(String pathArquivo) {
+	return new String(getResourseAsStreamAsBytes(pathArquivo));
     }
 
     public static Calendar getCalendarFromDataMilli(Long dataMilli) {
