@@ -22,7 +22,7 @@ public enum MimeType {
 	}
     }
 
-    public static MimeType findByDescricaoMime(String descricaoMime) {
+    public static MimeType findByDescricaoMimeType(String descricaoMime) {
 	for (MimeType mimeType : MimeType.values()) {
 	    if (mimeType.descricao.equalsIgnoreCase(descricaoMime)) {
 		return mimeType;

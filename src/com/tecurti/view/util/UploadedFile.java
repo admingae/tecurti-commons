@@ -9,9 +9,14 @@ public class UploadedFile {
     public MimeType mimeType;
     public byte[] bytes;
 
-    public UploadedFile(byte[] bytes) {
+    public UploadedFile(byte[] bytes, MimeType mimeType) {
 	super();
 	this.bytes = bytes;
+	this.mimeType = mimeType;
+    }
+
+    public boolean isGifAnimado() {
+	return mimeType.in(MimeType.GIF);
     }
 
 }

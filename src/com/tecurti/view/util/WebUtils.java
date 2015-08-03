@@ -160,10 +160,9 @@ public class WebUtils {
 			field.set(object, uploadedFile);
 		    }
 		} else {
-		    UploadedFile uploadedFile = new UploadedFile(byteArray);
+		    UploadedFile uploadedFile = new UploadedFile(byteArray, MimeType.findByDescricaoMimeType(item.getContentType()));
 		    uploadedFile.nomeArquivo = item.getName();
 		    uploadedFile.nomeParametro = item.getFieldName();
-		    uploadedFile.mimeType = MimeType.findByDescricaoMime(item.getContentType());
 		    
 		    if (isMap) {
 			map.put(item.getFieldName(), uploadedFile);
