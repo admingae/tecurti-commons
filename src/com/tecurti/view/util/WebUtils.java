@@ -49,6 +49,7 @@ import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 import com.tecurti.model.entidades.Dimension;
+import com.tecurti.model.entidades.MimeType;
 import com.tecurti.model.entidades.TipoErroCommons;
 import com.tecurti.model.utils.ModelUtils;
 
@@ -159,10 +160,10 @@ public class WebUtils {
 			field.set(object, uploadedFile);
 		    }
 		} else {
-		    UploadedFile uploadedFile = new UploadedFile();
+		    UploadedFile uploadedFile = new UploadedFile(byteArray);
 		    uploadedFile.nomeArquivo = item.getName();
 		    uploadedFile.nomeParametro = item.getFieldName();
-		    uploadedFile.bytes = byteArray;
+		    uploadedFile.mimeType = MimeType.findByDescricaoMime(item.getContentType());
 		    
 		    if (isMap) {
 			map.put(item.getFieldName(), uploadedFile);
