@@ -1515,6 +1515,52 @@ public class WebUtils {
 	}	
     }
     
+    /*
+     * http://stackoverflow.com/questions/25148567/list-of-all-the-app-engine-images-service-get-serving-url-uri-options
+     * SIZE / CROP
+     * 
+     * s640 — generates image 640 pixels on largest dimension
+     * s0 — original size image
+     * w100 — generates image 100 pixels wide
+     * h100 — generates image 100 pixels tall
+     * p — smart square crop, attempts cropping to faces
+     * pp — alternate smart square crop, does not cut off faces (?)
+     * cc — generates a circularly cropped image
+     * ci — square crop to smallest of: width, height, or specified =s parameter
+     * ROTATION
+     * 
+     * fv — flip vertically
+     * fh — flip horizontally
+     * r90 — rotate 90 degrees (or 180 or 270)
+     * IMAGE FORMAT
+     * 
+     * rj — forces the resulting image to be JPG
+     * rp — forces the resulting image to be PNG
+     * rw — forces the resulting image to be WebP
+     * rg — forces the resulting image to be GIF
+     * Forcing PNG, WebP and GIF outputs can work in combination with circular crops for a transparant background. Forcing JPG can be combined with border color to fill in backgrounds in transparent images.
+     * 
+     * ANIMATED GIFs
+     * 
+     * rh — generates an MP4 from the input image
+     * k — kill animation (generates static image)
+     * MISC.
+     * 
+     * b10 — add a 10px border to image
+     * c0xAARRGGBB — set border color, eg. =c0xffff0000 for red
+     * d — adds header to cause browser download
+     * e7 — set cache-control max-age header on response to 7 days
+     * l100 — sets JPEG quality to 100% (1-100)
+     * Filters
+     * 
+     * fSoften=1,100,0: - where 100 can go from 0 to 100 to blur the image
+     * fVignette=1,100,1.4,0,000000 where 100 controls the size of the gradient and 000000 is RRGGBB of the color of the border shadow
+     * Caveats
+     * 
+     * Some options (like =l for JPEG quality) do not seem to generate new images. If you change another option (size, etc.) and change the l value, the quality change should be visible. Some options also don't work well together. This is all undocumented by Google, probably with good reason.
+     * 
+     * Moreover, it's probably not a good idea to depend on any of these options existing forever. Google could remove most of them without notice at any time.
+     */
     public static String appendParametrosGcsParaUrl(String url, int width, int height) {
 	boolean isQuadrada = width == height;
 	if (isQuadrada) {
