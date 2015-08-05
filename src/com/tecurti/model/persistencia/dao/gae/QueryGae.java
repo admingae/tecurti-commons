@@ -362,7 +362,7 @@ public class QueryGae {
 	return UtilsGaeDAO.toListKeys(listEntity);
     }
 
-    public Key findId(DatastoreService datastore, Transaction txn) {
+    public Key findKey(DatastoreService datastore, Transaction txn) {
 	
 	setLimiteValoresRetornados(1);
 	
