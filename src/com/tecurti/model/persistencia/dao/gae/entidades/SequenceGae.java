@@ -10,7 +10,7 @@ import com.tecurti.model.persistencia.dao.gae.utils.UtilsGaeDAO;
 public class SequenceGae implements Serializable, EntityGae {
     
     String nameId;
-    Long count;
+    Long count = 0L;
     
     public static class Attr {
 	public static String KIND = UtilsGaeDAO.getKIND(SequenceGae.class);
@@ -21,7 +21,7 @@ public class SequenceGae implements Serializable, EntityGae {
 
     @Override
     public Key getParentKey() {
-	return null;
+	return createParentKey(nameId);
     }
     
     @Override
@@ -30,6 +30,10 @@ public class SequenceGae implements Serializable, EntityGae {
     }
 
     public static Key createKey(String nameId) {
+	Key parentKey = createParentKey(nameId);
+	return KeyFactory.createKey(parentKey, SequenceGae.Attr.KIND, nameId);
+    }
+    public static Key createParentKey(String nameId) {
 	return KeyFactory.createKey(SequenceGae.Attr.KIND, nameId);
     }
 
@@ -70,5 +74,9 @@ public class SequenceGae implements Serializable, EntityGae {
     public void setNameId(String nameId) {
         this.nameId = nameId;
     }
-
+    
+    public Long increase() {
+	count++;
+	return count;
+    }
 }
