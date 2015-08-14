@@ -975,8 +975,25 @@ public class ModelUtils {
 	return dateFormat.format(calendar.getTime());
     }
     
+    public static String retirarLetras(String texto) {
+	if (texto == null) {
+	    return null;
+	}
+	return texto.replaceAll("\\d", "");
+    }
+    
     public static void main(String[] args) {
-	System.err.println(formatarDDMMYYYY(new GregorianCalendar()));
+	
+	String c = "fe3li4pe55";
+	
+	System.err.println(c.replaceAll("\\d", ""));
+    }
+
+    public static boolean isTelefoneValido(String telefone) {
+	if (isEmptyTrim(telefone)) {
+	    return false;
+	}
+	return telefone.length() >= 10 && telefone.length() <= 11;
     }
 }
 
