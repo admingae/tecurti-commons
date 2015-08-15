@@ -979,7 +979,7 @@ public class ModelUtils {
 	if (texto == null) {
 	    return null;
 	}
-	return texto.replaceAll("\\d", "");
+	return texto.replaceAll("\\D", "");
     }
     
     public static void main(String[] args) {
