@@ -203,6 +203,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return executeSQLQuery(null, sql, parameters);
     }
 
+    public T executeSQLQueryReturnUniqueResult(Session session, final String sql, final DAOGenericoParameter... parameters) throws Exception {
+	List<T> list = executeSQLQuery(session, sql, parameters);
+	return list.isEmpty() ? null : list.get(0);
+    }
+    
     public List<T> executeSQLQuery(Session session, final String sql, final DAOGenericoParameter... parameters) throws Exception {
 	if (session == null) {
 	    Object retorno = executeTransaction(new HibernateSessionCommand() {
