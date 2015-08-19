@@ -66,9 +66,16 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
 
     public void insertOrUpdate(final T objeto) throws Exception {
-	executeTransaction(new HibernateSessionCommand() { @Override public void execute(Session session, Transaction transaction) {
+	insertOrUpdate(objeto, null);
+    }
+    public void insertOrUpdate(final T objeto, Session session) throws Exception {
+	if (session != null) {
 	    session.saveOrUpdate(objeto);
-	}});
+	} else {
+	    executeTransaction(new HibernateSessionCommand() { @Override public void execute(Session session, Transaction transaction) {
+		session.saveOrUpdate(objeto);
+	    }});
+	}
     }
 
     public <I>I insert(final T objeto) throws Exception {
@@ -356,7 +363,10 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
 
     public T executeQueryAndReturnUniqueResult(String hql, DAOGenericoParameter... parameters) throws Exception {
-	return executeQueryForDiferentTypeAndReturnUniqueResult(getGenericsClass(), hql, parameters);
+	return executeQueryAndReturnUniqueResult(null, hql, parameters);
+    }
+    public T executeQueryAndReturnUniqueResult(Session session, String hql, DAOGenericoParameter... parameters) throws Exception {
+	return executeQueryForDiferentTypeAndReturnUniqueResult(session, getGenericsClass(), hql, parameters);
     }
 
     public List<T> executeQuery(String hql, DAOGenericoParameter... parameters) throws Exception {
@@ -367,8 +377,12 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
 
     public <DiferentType> DiferentType executeQueryForDiferentTypeAndReturnUniqueResult(Class<DiferentType> type, String hql, DAOGenericoParameter... parameters ) throws Exception {
+	return executeQueryForDiferentTypeAndReturnUniqueResult(null, type, hql, parameters );
+    }
+    
+    public <DiferentType> DiferentType executeQueryForDiferentTypeAndReturnUniqueResult(Session session, Class<DiferentType> type, String hql, DAOGenericoParameter... parameters ) throws Exception {
 
-	List<DiferentType> resultList = executeQueryForDiferentType(type,null, hql, parameters);
+	List<DiferentType> resultList = executeQueryForDiferentType(session, type,null, hql, parameters);
 	return resultList.isEmpty() ? null : resultList.get(0);
     }
 
