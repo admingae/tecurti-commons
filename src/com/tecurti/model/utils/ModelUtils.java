@@ -699,6 +699,15 @@ public class ModelUtils {
 	    return false;
 	}
     }
+    
+    public static boolean isValidDouble(String string) {
+	try {
+	    Double.parseDouble(string);
+	    return true;
+	} catch (NumberFormatException e) {
+	    return false;
+	}
+    }
 
     public static boolean isValidLong(String string) {
 	try {
@@ -994,6 +1003,10 @@ public class ModelUtils {
 	    return false;
 	}
 	return telefone.length() >= 10 && telefone.length() <= 11;
+    }
+
+    public static boolean isLinkHttpValido(String url) {
+	return isNotEmpty(url) && url.startsWith("http://");
     }
 }
 

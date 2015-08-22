@@ -144,7 +144,19 @@ public class WebUtils {
 	    
 	    if (item.isFormField()) {
 		String valor = URLDecoder.decode(new String(byteArray), "UTF-8");
-		String valorFinal = valor == null ? "" : valor;
+		Object valorFinal = null;
+		if (valor != null) {
+		    if (field.getType().equals(boolean.class) || field.getType().equals(Boolean.class)) {
+			if (valor.equalsIgnoreCase("on")) {
+			    valorFinal = true;
+			} else {
+			    valorFinal = Boolean.parseBoolean(valor);
+			}
+		    } else {
+			valorFinal = valor;
+		    }
+		}
+		
 		if (isMap) {
 		    map.put(item.getFieldName(), valorFinal);
 		} else {
