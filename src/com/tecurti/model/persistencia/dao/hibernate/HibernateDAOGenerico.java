@@ -175,11 +175,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	query.executeUpdate();
     }
 
-    public List<T> executeSQLQuery(final String sql,Class<T>transformedClass, final DAOGenericoParameter... parameters) throws Exception {
+    public List<T> executeSQLQuery(final String sql,Class transformedClass, final DAOGenericoParameter... parameters) throws Exception {
 	return executeSQLQueryForUnmappedResult(null,null, sql,transformedClass, parameters);
     }
 
-    private List<T> executeSQLQueryForUnmappedResult(Session session, final Integer maxResults, final String sql, final Class<T> transformedClass, final DAOGenericoParameter[] parameters) throws Exception {
+    private List<T> executeSQLQueryForUnmappedResult(Session session, final Integer maxResults, final String sql, final Class transformedClass, final DAOGenericoParameter[] parameters) throws Exception {
 	if (session == null) {
 	    Object retorno = executeTransaction(new HibernateSessionCommand<Object>() {
 		public Object executeComRetorno(Session sess, Transaction transaction) throws Exception {    
@@ -192,7 +192,7 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	}
     }
 
-    private List<T> doExecuteSQLQueryForUnmappedResult(Session session, String sql,Integer maxResults,Class<T>transformedClass, DAOGenericoParameter... parameters) {
+    private List<T> doExecuteSQLQueryForUnmappedResult(Session session, String sql,Integer maxResults,Class transformedClass, DAOGenericoParameter... parameters) {
 
 	SQLQuery query = session.createSQLQuery(sql);
 	for (DAOGenericoParameter param : parameters) {
