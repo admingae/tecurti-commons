@@ -171,6 +171,12 @@ public class ModelUtils {
 	return ModelUtils.dateToStr(date, dateFormat, timeZone);
     }    
 
+    public static String dateTimeToStr(Date date, i18nUsandoApiPadrao idioma) {
+	Calendar calendar = Calendar.getInstance();
+	calendar.setTime(date);
+	
+	return dateTimeToStr(calendar, idioma);
+    }
     public static String dateTimeToStr(Calendar date, i18nUsandoApiPadrao idioma) {
 	return dateTimeToStr(date, idioma, null);
     }
