@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -48,6 +49,7 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	Transaction transaction = null;
 
 	try {
+	    session.setFlushMode(FlushMode.ALWAYS);
 	    transaction = session.beginTransaction();
 
 	    command.execute(session, transaction);
@@ -303,7 +305,11 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
     }
 
     public List<T> findAll() throws Exception {
-	return executeQuery("from " + getGenericsClass().getName());
+	return findAll(null);
+    }
+    
+    public List<T> findAll(Session session) throws Exception {
+	return executeQuery(session, "from " + getGenericsClass().getName());
     }
 
     public T findByAttributesAndReturnUniqueResult(DAOGenericoParameter... attributesToFilter) throws Exception {
