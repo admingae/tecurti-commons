@@ -13,8 +13,8 @@ import com.tecurti.view.util.WebUtils.HttpMethod;
 public class PagarMeService {
 
     public static class RespostaCadastrarCartao {
-	boolean isErro;
-	TipoErroCommons tipoErro;
+	public boolean isErro;
+	public TipoErroCommons tipoErro;
 	public String cardId; 
     }
     public RespostaCadastrarCartao cadastrarCartao(String cardHash, String apiKey) throws Exception {
