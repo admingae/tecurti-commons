@@ -1191,6 +1191,11 @@ public class WebUtils {
 	Map<String, Object> mapResposta = mapJsonDeserializer.deserialize(respostaAsStringJson);
 	return mapResposta;
     }
+    public static List<Map<String, Object>> fazerChamadaWebserviceAsListJson(String url, HttpMethod method, Map<String,Object> params) throws Exception {
+	String respostaAsStringJson = fazerChamadaWebservice(url, method, params);
+	List<Map<String, Object>> listMapResposta = listMapJsonDeserializer.deserialize(respostaAsStringJson);
+	return listMapResposta;
+    }
     public static byte[] fazerChamadaWebserviceAsBytes(String url, HttpMethod method, Map<String,Object> params) throws Exception {
 	
 	int timeout = 120000;
