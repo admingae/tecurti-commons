@@ -158,12 +158,18 @@ public class ModelUtils {
 	return tempo;
     }
 
+    public static String dateToStr(Date date, i18nUsandoApiPadrao idioma) {
+	Calendar calendar = Calendar.getInstance();
+	calendar.setTime(date);
+	
+	return dateToStr(calendar, idioma);
+    }
     public static String dateToStr(Calendar date, i18nUsandoApiPadrao idioma) {
 	return dateToStr(date, idioma, null);
     }
     public static String dateToStr(Calendar date, i18nUsandoApiPadrao idioma, TimeZone timeZone) {
 
-	if (date == null || date.equals("")) {
+	if (date == null) {
 	    return "";
 	} 
 
@@ -172,6 +178,9 @@ public class ModelUtils {
     }    
 
     public static String dateTimeToStr(Date date, i18nUsandoApiPadrao idioma) {
+	if (date == null) {
+	    return "";
+	}
 	Calendar calendar = Calendar.getInstance();
 	calendar.setTime(date);
 	
