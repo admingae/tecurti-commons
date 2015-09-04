@@ -64,6 +64,10 @@ public class ModelUtils {
     
     public static double regraDe3(double itemBase, double valorItemBase, double itemParaDescobriValor) {
 	
+	if (itemBase == 0) {
+	    return 0;
+	}
+	
 	BigDecimal itemBaseBigDecimal = new BigDecimal(itemBase).setScale(2, RoundingMode.HALF_UP);
 	BigDecimal valorItemBaseBigDecimal = new BigDecimal(valorItemBase).setScale(2, RoundingMode.HALF_UP);
 	BigDecimal itemParaDescobriValorBigDecimal = new BigDecimal(itemParaDescobriValor).setScale(2, RoundingMode.HALF_UP);
