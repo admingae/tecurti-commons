@@ -1024,9 +1024,6 @@ public class ModelUtils {
 	return telefone.length() >= 10 && telefone.length() <= 11;
     }
 
-    public static boolean isLinkHttpValido(String url) {
-	return isNotEmpty(url) && url.startsWith("http://");
-    }
 }
 
 
