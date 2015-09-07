@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -481,6 +483,30 @@ public class WebUtils {
 	    			|| field.getType().equals(Short.class) 
 	    			|| field.getType().equals(byte.class) 
 	    			|| field.getType().equals(Byte.class);
+    }
+
+    public static String encodeURIComponent(String texto) {
+	return (String) evalJavascript(texto, "encodeURIComponent('"+texto+"')");
+    }
+    
+    public static String decodeURIComponent(String texto) {
+	return (String) evalJavascript(texto, "decodeURIComponent('"+texto+"')");
+    }
+
+    private static Object evalJavascript(String texto, String scriptParaEval) {
+	if (texto == null) {
+	    return null;
+	}
+	try {
+	    
+	    ScriptEngineManager factory = new ScriptEngineManager();
+	    ScriptEngine engine = factory.getEngineByName("JavaScript");
+	    Object eval = engine.eval(scriptParaEval);
+	    return eval;
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    return null;
+	}
     }
     
     public static Date createDataExpires() {
@@ -1063,7 +1089,7 @@ public class WebUtils {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<div style=\"width: 100%; max-width: "+WIDTH_IDADEL_PARA_VIDEO_EMBED+";\">");
 		builder.append(	    "<div style=\"width: 100%; height: 0; padding-bottom: 65%; position: relative;\">");
-		builder.append(           "<iframe style=\"width: 100%; height: 100%; position: absolute;\" title=\"YouTube video player\" class=\"youtube-player containerDeVideo\" type=\"text/html\" src=\"http://www.youtube.com/embed/"+idVideo+"\" frameborder=\"0\" allowFullScreen></iframe>");
+		builder.append(           "<iframe style=\"width: 100%; height: 100%; position: absolute;\" title=\"YouTube video player\" class=\"youtube-player containerDeVideo\" type=\"text/html\" src=\"https://www.youtube.com/embed/"+idVideo+"\" frameborder=\"0\" allowFullScreen></iframe>");
 		builder.append(	    "</div>");
 		builder.append("</div>");
 		
