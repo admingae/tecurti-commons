@@ -80,11 +80,12 @@ public class WebUtils {
     public static String HASH_EXIBIR_IMAGEM = "exibirImagem";
     public static String HASH_URL_GENERICA = "urlGenerica";
     
-    public static String versionar(boolean colocarInterrogacao) {
-	return colocarInterrogacao ? VERSAO_COM_INTERROGACAO : VERSAO_SEM_INTERROGACAO;
+    public static String versionar(boolean colocarInterrogacao, Object valorVersao) {
+	String prefix = colocarInterrogacao ? VERSAO_COM_INTERROGACAO : VERSAO_SEM_INTERROGACAO;
+	return prefix + valorVersao;
     }
-    public static String versionar() {
-	return versionar(true);
+    public static String versionar(Object valorVersao) {
+	return versionar(true, valorVersao);
     }
     
     public static void popularObjectComParameters(Object object, HttpServletRequest request) throws IllegalAccessException {
