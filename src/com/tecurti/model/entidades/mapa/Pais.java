@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
 import com.tecurti.model.utils.ModelUtils;
+import com.tecurti.view.util.WebUtils;
 
 public class Pais implements PontoNoMapa {
 
@@ -62,6 +63,9 @@ public class Pais implements PontoNoMapa {
 	}
     }
     
+    public String getNomeAsUTF8(i18nUsandoApiPadrao idioma) {
+	return ModelUtils.encodeUTF8(getNome(idioma));
+    }
     public String getNomeAsHtml(i18nUsandoApiPadrao idioma) {
 	return StringEscapeUtils.escapeHtml4(getNome(idioma));
     }
