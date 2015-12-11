@@ -224,7 +224,7 @@ public class WebUtils {
 	IE() {
 	    @Override
 	    public int getVersao(String userAgent) {
-
+		if (userAgent == null) {return -1;}
 		try {
 		    userAgent = userAgent.toUpperCase();
 		    
@@ -251,6 +251,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
+		if (userAgent == null) {return false;}
 		String userAgentLowerSemEspacos = userAgent.toLowerCase().replaceAll(" ", "");
 		
 		if (userAgentLowerSemEspacos.contains("msie")) {
@@ -266,6 +267,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
+		if (userAgent == null) {return false;}
 		String userAgentLower = userAgent.toLowerCase();
 		return userAgentLower.contains("firefox");
 	    }
@@ -276,9 +278,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
-		/*if (true) {
-		    return false;
-		}*/
+		if (userAgent == null) {return false;}
 		String userAgentLower = userAgent.toLowerCase();
 		return userAgentLower.contains("chrome");
 	    }
@@ -289,6 +289,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
+		if (userAgent == null) {return false;}
 		String userAgentLower = userAgent.toLowerCase();
 		return userAgentLower.contains("mobile") == false
 			&& userAgentLower.contains("chrome") == false
@@ -301,9 +302,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
-		/*if (true) {
-		    return true;
-		}*/
+		if (userAgent == null) {return false;}
 		return userAgent.toLowerCase().contains("mobile");
 	    }
 	}, ANDROID() {
@@ -313,6 +312,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
+		if (userAgent == null) {return false;}
 		return userAgent.toLowerCase().contains("android");
 	    }
 	}, IPHONE() {
@@ -322,6 +322,7 @@ public class WebUtils {
 	    }
 	    @Override
 	    public boolean isUserAgent(String userAgent) {
+		if (userAgent == null) {return false;}
 		return userAgent.toLowerCase().contains("iphone");
 	    }
 	};
