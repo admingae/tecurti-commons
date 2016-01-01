@@ -486,6 +486,10 @@ public class UtilsGaeDAO {
 	return listIds;
     }
 
+    public static Key strToKey(String keyAsString) {
+	return KeyFactory.stringToKey(keyAsString);
+    }
+
 }
 
 
