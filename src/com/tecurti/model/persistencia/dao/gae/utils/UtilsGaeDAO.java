@@ -486,7 +486,7 @@ public class UtilsGaeDAO {
 	return listIds;
     }
 
-    public static Key strToKey(String keyAsString) {
+    public static Key stringToKey(String keyAsString) {
 	try {
 	    return KeyFactory.stringToKey(keyAsString);
 	} catch (Exception e) {
