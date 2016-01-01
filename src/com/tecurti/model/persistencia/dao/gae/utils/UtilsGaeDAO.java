@@ -487,7 +487,11 @@ public class UtilsGaeDAO {
     }
 
     public static Key strToKey(String keyAsString) {
-	return KeyFactory.stringToKey(keyAsString);
+	try {
+	    return KeyFactory.stringToKey(keyAsString);
+	} catch (Exception e) {
+	    return null;
+	}
     }
 
 }
