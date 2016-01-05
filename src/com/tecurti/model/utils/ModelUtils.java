@@ -62,6 +62,21 @@ public class ModelUtils {
 	}
     }
     
+    public static String listToString(List<String> lista, String separador) {
+	if (lista == null) {
+	    return "";
+	}
+	StringBuilder out = new StringBuilder("");
+	for (String valor : lista) {
+	    if (out.length() > 0) {
+		out.append(separador);
+	    }
+	    out.append(valor);
+	}
+
+	return out.toString();
+    }
+    
     public static double regraDe3(double itemBase, double valorItemBase, double itemParaDescobriValor) {
 	
 	if (itemBase == 0) {
