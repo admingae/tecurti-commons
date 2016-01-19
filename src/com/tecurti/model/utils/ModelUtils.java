@@ -61,6 +61,14 @@ public class ModelUtils {
 	    }
 	}
     }
+
+    public static String padRight(String s, int n) {
+	return String.format("%1$-" + n + "s", s);  
+    }
+
+    public static String padLeft(String s, int n) {
+	return String.format("%1$" + n + "s", s);  
+    }
     
     public static String listToString(List<String> lista, String separador) {
 	if (lista == null) {
