@@ -40,6 +40,7 @@ import org.apache.commons.collections.MapUtils;
 
 import com.tecurti.model.entidades.Tempo;
 import com.tecurti.model.entidades.UnidadeTempo;
+import com.tecurti.model.service.PagarMeService.StatusReasonTransacaoPagarMe;
 import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
 
 public class ModelUtils {
@@ -1045,6 +1046,10 @@ public class ModelUtils {
 	    return false;
 	}
 	return telefone.length() >= 10 && telefone.length() <= 11;
+    }
+
+    public static String toString(Object object) {
+	return object == null ? "" : object.toString();
     }
 
 }

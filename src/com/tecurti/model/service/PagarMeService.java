@@ -121,6 +121,11 @@ public class PagarMeService {
 	    
 	    resposta.idTransacao = (Integer) mapResposta.get("id");
 	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
+	    if (resposta.status == null || resposta.idTransacao == null) {
+		resposta.isErroInterno = true;
+		resposta.descErroInterno = buscarDescricaoErroInternoPagarme(mapResposta);
+		return resposta;
+	    }
 	    resposta.statusReason = criarEnumStatusReasonTransacaoPagarMe((String) mapResposta.get("status_reason"));
 	    resposta.acquirerResponseCode = (String) mapResposta.get("acquirer_response_code");
 	} catch (Exception e) {
@@ -130,6 +135,32 @@ public class PagarMeService {
 	}
 	
 	return resposta;
+    }
+
+    /**
+     * @param map
+	{
+            "errors":[
+            	{
+                    "type":"internal_error",
+                    "parameter_name":null,
+                    "message":"Internal server error."
+                }
+            ],
+            "url":"/transactions",
+            "method":"post"
+        }
+     * @return
+     */
+    private String buscarDescricaoErroInternoPagarme(Map<String, Object> map) {
+	try {
+	    List listErros = (List) map.get("errors");
+	    Map<String, Object> mapErro = (Map<String, Object>) listErros.get(0);
+	    return (String) mapErro.get("message");
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    return null;
+	}
     }
 
     private StatusReasonTransacaoPagarMe criarEnumStatusReasonTransacaoPagarMe(String object) {
