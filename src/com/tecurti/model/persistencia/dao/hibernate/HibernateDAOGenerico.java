@@ -181,7 +181,7 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	return executeSQLQueryForUnmappedResult(null,null, sql,transformedClass, parameters);
     }
 
-    private List<T> executeSQLQueryForUnmappedResult(Session session, final Integer maxResults, final String sql, final Class transformedClass, final DAOGenericoParameter[] parameters) throws Exception {
+    public List<T> executeSQLQueryForUnmappedResult(Session session, final Integer maxResults, final String sql, final Class transformedClass, final DAOGenericoParameter... parameters) throws Exception {
 	if (session == null) {
 	    Object retorno = executeTransaction(new HibernateSessionCommand<Object>() {
 		public Object executeComRetorno(Session sess, Transaction transaction) throws Exception {    
