@@ -87,6 +87,7 @@ public class PagarMeService {
 	// Mensagem de resposta do adquirente referente ao status da transação.
 	public String acquirerResponseCode;
 	public String descErroInterno;
+	public String descErro;
 
 	@Override
 	public String toString() {
@@ -122,8 +123,8 @@ public class PagarMeService {
 	    resposta.idTransacao = (Integer) mapResposta.get("id");
 	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
 	    if (resposta.status == null || resposta.idTransacao == null) {
-		resposta.isErroInterno = true;
-		resposta.descErroInterno = buscarDescricaoErroInternoPagarme(mapResposta);
+		resposta.status = StatusTransacaoPagarMe.REFUSED;
+		resposta.descErro = buscarDescricaoErroInternoPagarme(mapResposta);
 		return resposta;
 	    }
 	    resposta.statusReason = criarEnumStatusReasonTransacaoPagarMe((String) mapResposta.get("status_reason"));
