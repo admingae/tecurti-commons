@@ -88,6 +88,7 @@ public class PagarMeService {
 	public String acquirerResponseCode;
 	public String descErroInterno;
 	public String descErro;
+	public String jsonResposta;
 
 	@Override
 	public String toString() {
@@ -120,6 +121,7 @@ public class PagarMeService {
 	    String respostaJson = WebUtils.fazerChamadaWebservice(url, HttpMethod.POST, map);
 	    Map<String, Object> mapResposta = WebUtils.mapJsonDeserializer.deserialize(respostaJson);
 	    
+	    resposta.jsonResposta = respostaJson;
 	    resposta.idTransacao = (Integer) mapResposta.get("id");
 	    resposta.status = criarEnumStatusTransacaoPagarMe((String) mapResposta.get("status"));
 	    if (resposta.status == null || resposta.idTransacao == null) {
