@@ -482,11 +482,21 @@ public abstract class DAOGenericoGAE<T extends EntityGae, AtributosDaClasse> {
     }
     
     public List<T> findAll() throws Exception {
-	return findAll(null, null);
+	return findAll(null);
     }
     public List<T> findAll(DatastoreService datastore, Transaction txn) throws Exception {
+	return findAll(null, datastore, txn);
+    }
+    
+    public List<T> findAll(Integer limite) throws Exception {
+	return findAll(limite, null, null);
+    }
+    public List<T> findAll(Integer limite, DatastoreService datastore, Transaction txn) throws Exception {
 	
 	QueryGae queryGae = new QueryGae(getTClass(), null);
+	if (limite != null) {
+	    queryGae.setLimiteValoresRetornados(limite);
+	}
 	return findListBy(queryGae, datastore, txn);
     }
     
