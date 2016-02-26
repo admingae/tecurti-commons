@@ -1231,18 +1231,20 @@ public class WebUtils {
 	
 	// ----------------
 	List<Object> listParametros = new ArrayList<>();
-	for (Map.Entry<String, Object> param : params.entrySet()) {
-	    Object value = param.getValue();
-	    if (value == null) {
-		continue;
-	    }
-	    if (value instanceof UploadedFile) {
-		listParametros.add(value);
-	    } else {
-		ParametroSimplesWebService parametro = new ParametroSimplesWebService();
-		parametro.name = URLEncoder.encode(param.getKey(), "UTF-8");
-		parametro.value = URLEncoder.encode(String.valueOf(value), "UTF-8");
-		listParametros.add(parametro);
+	if (params != null) {
+	    for (Map.Entry<String, Object> param : params.entrySet()) {
+		Object value = param.getValue();
+		if (value == null) {
+		    continue;
+		}
+		if (value instanceof UploadedFile) {
+		    listParametros.add(value);
+		} else {
+		    ParametroSimplesWebService parametro = new ParametroSimplesWebService();
+		    parametro.name = URLEncoder.encode(param.getKey(), "UTF-8");
+		    parametro.value = URLEncoder.encode(String.valueOf(value), "UTF-8");
+		    listParametros.add(parametro);
+		}
 	    }
 	}
 	
@@ -1316,7 +1318,9 @@ public class WebUtils {
 		conn.setRequestProperty("Content-Length", String.valueOf(queryStringAsBytes.length));
 		conn.getOutputStream().write(queryStringAsBytes);
 	    } else {
-		String urlComQueryString = url + "?" + new String(queryStringAsBytes);
+		String queryStringFinalGET = new String(queryStringAsBytes);
+		queryStringFinalGET = ModelUtils.isEmptyTrim(queryStringFinalGET) ? "" : "?" + queryStringFinalGET;
+		String urlComQueryString = url + queryStringFinalGET;
 		
 	        conn = (HttpURLConnection)new URL(urlComQueryString).openConnection();
 	        conn.setRequestMethod(method.toString());
@@ -1327,8 +1331,9 @@ public class WebUtils {
 	}
 	
 	// ----------------
-        Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
+        /*Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);*/
+	byte[] respostaAsBytes = ModelUtils.toByteArray(conn.getInputStream());
 	return respostaAsBytes;
     }
     

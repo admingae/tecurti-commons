@@ -1051,6 +1051,20 @@ public class ModelUtils {
     public static String toString(Object object) {
 	return object == null ? "" : object.toString();
     }
+    
+    public static byte[] toByteArray(InputStream inputStream) throws Exception {
+        ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+        
+        int bytesRead = -1;
+        byte[] buffer = new byte[1024];
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            arrayOutputStream.write(buffer, 0, bytesRead);
+        }
+        arrayOutputStream.close();
+        inputStream.close();
+        
+        return arrayOutputStream.toByteArray();
+    }
 
 }
 
