@@ -488,6 +488,7 @@ public class WebUtils {
     }
 
     public static String encodeURIComponent(String texto) {
+	texto = texto.replace("\n", "\\n").replace("\r", "\\r").replace("'", "\\'");;
 	return (String) evalJavascript(texto, "encodeURIComponent('"+texto+"')");
     }
     
@@ -495,18 +496,18 @@ public class WebUtils {
 	return (String) evalJavascript(texto, "decodeURIComponent('"+texto+"')");
     }
 
+    private static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+    private static ScriptEngine javascriptEngine = scriptEngineManager.getEngineByName("JavaScript");
     private static Object evalJavascript(String texto, String scriptParaEval) {
 	if (texto == null) {
 	    return null;
 	}
 	try {
-	    
-	    ScriptEngineManager factory = new ScriptEngineManager();
-	    ScriptEngine engine = factory.getEngineByName("JavaScript");
-	    Object eval = engine.eval(scriptParaEval);
+	    Object eval = javascriptEngine.eval(scriptParaEval);
 	    return eval;
 	} catch (Exception e) {
-	    e.printStackTrace();
+//	    e.printStackTrace();
+	    logger.severe("Erro javascriptEngine.eval("+scriptParaEval+")");
 	    return null;
 	}
     }
