@@ -805,7 +805,7 @@ public class ModelUtils {
     }
 
     public static void truncarListaSeNecessario(List list, int max) {
-	if (list.size() >= max) {
+	if (list.size() > max) {
 	    for (int i = list.size()-1; i >= 0; i--) {
 		list.remove(i);
 		if (list.size() == max) {
