@@ -1018,11 +1018,11 @@ public class ModelUtils {
 	return Arrays.asList(array);
     }
 
-    public static String formatarDDMMYYYY_HHMMYYYY(GregorianCalendar calendar) {
+    public static String formatarDDMMYYYY_HHMMYYYY(Calendar calendar) {
 	SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 	return dateFormat.format(calendar.getTime());
     }
-    public static String formatarDDMMYYYY(GregorianCalendar calendar) {
+    public static String formatarDDMMYYYY(Calendar calendar) {
 	SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 	return dateFormat.format(calendar.getTime());
     }
