@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +41,6 @@ import org.apache.commons.collections.MapUtils;
 
 import com.tecurti.model.entidades.Tempo;
 import com.tecurti.model.entidades.UnidadeTempo;
-import com.tecurti.model.service.PagarMeService.StatusReasonTransacaoPagarMe;
 import com.tecurti.model.service.idioma.i18nUsandoApiPadrao;
 
 public class ModelUtils {
@@ -49,7 +49,17 @@ public class ModelUtils {
 
     public static TimeZone GMT_SAO_PAULO = TimeZone.getTimeZone("America/Sao_Paulo");
 
-
+    public static Map<String, String> getQueryMap(String query) {
+	String[] params = query.split("&");
+	Map<String, String> map = new HashMap<String, String>();
+	for (String param : params) {
+	    String name = param.split("=")[0];
+	    String value = param.split("=")[1];
+	    map.put(name, value);
+	}
+	return map;
+    }  
+    
     public static Tempo getDataAmigavel(Calendar dataDoEvento) {
 	GregorianCalendar dataAgora = new GregorianCalendar();
 	return calcularTempoEntreDatas(dataDoEvento, dataAgora);
