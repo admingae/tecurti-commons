@@ -623,6 +623,9 @@ public class ModelUtils {
 	return texto.toLowerCase();
     }
 
+    public static boolean notEqualsIn(Object valor, Object... valoresParaComparar) {
+	return equalsIn(valor, valoresParaComparar) == false;
+    }
     public static boolean equalsIn(Object valor, Object... valoresParaComparar) {
 	for (Object valorComp : valoresParaComparar) {
 	    if (valor == null) {

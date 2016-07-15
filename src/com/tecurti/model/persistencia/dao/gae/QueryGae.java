@@ -304,6 +304,9 @@ public class QueryGae {
 	return findListOfLiteralReturnValue(true, datastore, txn);
     }
     
+    public List<?> findListOfLiteralReturnValue() {
+	return findListOfLiteralReturnValue(null, null);
+    }
     public List<?> findListOfLiteralReturnValue(DatastoreService datastore, Transaction txn) {
 	return findListOfLiteralReturnValue(false, datastore, txn);
     }
