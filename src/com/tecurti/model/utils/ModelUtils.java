@@ -990,10 +990,10 @@ public class ModelUtils {
 	return valorRestanteParaPagamento.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public static boolean isNotEmpty(List<Long> list) {
+    public static boolean isNotEmpty(List list) {
 	return !isEmpty(list);
     }
-    public static boolean isEmpty(List<Long> list) {
+    public static boolean isEmpty(List list) {
 	return list == null || list.isEmpty();
     }
 
