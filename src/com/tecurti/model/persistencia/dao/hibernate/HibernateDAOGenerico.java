@@ -449,7 +449,15 @@ public abstract class HibernateDAOGenerico<T, ID extends Serializable> {
 	T objectFinded = (T) session.get(getGenericsClass(), id);
 	return objectFinded;
     }
-
+    
+    public static String toStringMantendoNull(Object valor) {
+	if (valor == null) {
+	    return null;
+	}
+	
+	return valor.toString();
+    }
+    
 }
 
 
