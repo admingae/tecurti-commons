@@ -164,14 +164,11 @@ public class QueryGae {
 
     public boolean isProjectionField(String campo) {
 	
-	/*if (projectionFieldsCalculados.isEmpty() || campo.equals("id")) {
-	    return true;
+	if (campo.equals("id")) {
+	    return false;
 	}
 	
-	return projectionFieldsCalculados.contains(campo) || listProjections.contains(campo);*/
-	
-
-	if (campo.equals("id") || (listProjections.isEmpty() && listProjectionsExceptions.isEmpty())) {
+	if (listProjections.isEmpty() && listProjectionsExceptions.isEmpty()) {
 	    return true;
 	}
 	
@@ -179,7 +176,6 @@ public class QueryGae {
 	    return listProjectionsExceptions.contains(campo) == false;
 	}
 	
-//	if (listProjections.size() > 0) {
 	return listProjections.contains(campo);
     }
 

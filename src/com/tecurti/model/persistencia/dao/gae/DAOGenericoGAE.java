@@ -532,20 +532,16 @@ public abstract class DAOGenericoGAE<T extends EntityGae, AtributosDaClasse> {
 	    for (Entity entity : entityList) {
 		
 		T t = getTClass().newInstance();
+		t.setKey(entity.getKey());
 		for (CampoPojoDetail campo : queryGae.getPojoDetails().getTodosCampos()) {
 		    
 		    boolean devePreencher = queryGae.isProjectionField(campo.getName());
 		    if (devePreencher) {
-			
 			if (queryGae.isFiltroDeIgualdade(campo.getName())) {
 			    Object valor = queryGae.getValorOriginalDoCampoQueEhFiltroDeIgualdade(campo.getName());
 			    campo.setValorJavaNoObjetoJava(t, valor);
 			} else {
-			    if (campo.getName().equals("id")) {
-				campo.setValorJavaNoObjetoJava(t, entity.getKey().getId());
-			    } else {
-				campo.setValorNoObjetoFromEntity(t, entity);
-			    }
+			    campo.setValorNoObjetoFromEntity(t, entity);
 			}
 		    } 
 		}
