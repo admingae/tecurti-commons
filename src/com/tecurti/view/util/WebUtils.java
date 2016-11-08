@@ -1398,6 +1398,102 @@ public class WebUtils {
 	public String descricaoResposta;
     }
     
+    public static class ConteudoFcm {
+	public List<String> listRegistrationIds = new ArrayList<>();
+	public Map<String, Object> dadosParaEnviar = new HashMap<>();
+    }
+    
+    public static final int FCM_MAX_INSTANCE_ID_PARA_NOTIFICAR_POR_VEZ = 1000;
+    public static List<RespostaFazerChamadaGcm> fazerChamadaFcm(ConteudoFcm conteudo, String apiKey) throws Exception {
+	List<RespostaFazerChamadaGcm> listRespostas = new ArrayList<>();
+
+	Map<String, Object> dadosParaEnviar = conteudo.dadosParaEnviar;
+	List<List<String>> sublistasDeRegistrationId = quebrarListsEmVariasSublists(conteudo.listRegistrationIds, FCM_MAX_INSTANCE_ID_PARA_NOTIFICAR_POR_VEZ);
+	for (List<String> listRegistrationId : sublistasDeRegistrationId) {
+	    RespostaFazerChamadaGcm resposta = fazerChamadaFcm(dadosParaEnviar, listRegistrationId, apiKey);
+	    listRespostas.add(resposta);
+	}
+
+	return listRespostas;
+    }
+    
+    private static RespostaFazerChamadaGcm fazerChamadaFcm(Map<String, Object> dadosParaEnviar, List<String> listRegistrationId, String apiKey) throws Exception {
+	
+	// ----------------
+	Map<String, Object> mapRequest = new HashMap<>();
+	mapRequest.put("data", dadosParaEnviar);
+	mapRequest.put("registration_ids", listRegistrationId);
+	String dataAsJson = jsonSerializer.deepSerialize(mapRequest);
+	byte[] dataJsongAsBytes = dataAsJson.toString().getBytes("UTF-8");
+	
+	// ----------------
+	URL url = new URL("https://fcm.googleapis.com/fcm/send");
+	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	conn.setDoOutput(true);
+	conn.setConnectTimeout(120000);
+	conn.setRequestMethod("POST");
+	conn.setRequestProperty("Cache-Control", "no-cache");
+	conn.setRequestProperty("Content-Type", "application/json");
+	conn.setRequestProperty("Authorization", "key="+apiKey);
+	conn.setRequestProperty("Content-Length", String.valueOf(dataJsongAsBytes.length));
+	conn.getOutputStream().write(dataJsongAsBytes);
+	
+	// ----------------
+	Reader readerResponse = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+	byte[] respostaAsBytes = IOUtils.toByteArray(readerResponse);
+	int responseCode = conn.getResponseCode();
+	String respostaAsString = new String(respostaAsBytes);
+	
+	// ----------------
+	RespostaFazerChamadaGcm resposta = new RespostaFazerChamadaGcm();
+	
+	boolean isSucesso = responseCode == 200;
+	resposta.responseCode = responseCode;
+	if (isSucesso) {
+	    resposta.isErro = false;
+	    
+	    Map<String, Object> mapResposta = mapJsonDeserializer.deserialize(respostaAsString);
+	    resposta.listMulticastId.add(mapResposta.get("multicast_id").toString());
+	    resposta.totalSuccess = Integer.parseInt(mapResposta.get("success").toString());
+	    resposta.totalFailure = Integer.parseInt(mapResposta.get("failure").toString());
+	    resposta.totalCanonicalIds = Integer.parseInt(mapResposta.get("canonical_ids").toString());
+	    
+	    boolean isTodasAsMensagensEnviadasComSucesso = resposta.totalFailure == 0 && resposta.totalCanonicalIds == 0;
+	    if (isTodasAsMensagensEnviadasComSucesso == false) {
+		List<Map<String, Object>> results = (List<Map<String, Object>>) mapResposta.get("results");
+		for (int i = 0; i < results.size(); i++) {
+		    Map<String, Object> r = results.get(i);
+		    String message_id = (String) r.get("message_id");
+		    String registration_id = (String) r.get("registration_id");
+		    String error = (String) r.get("error");
+		    
+		    boolean deuErro = ModelUtils.isEmptyTrim(message_id);
+		    if (deuErro) {
+			boolean ehUmErroQuePodeTentarNovamenteMaisTarde = error.equalsIgnoreCase("Unavailable");
+			boolean deveRemoverRegistrationId = ehUmErroQuePodeTentarNovamenteMaisTarde == false;
+			if (deveRemoverRegistrationId) {
+			    String registrationIdEnviado = listRegistrationId.get(i);
+			    resposta.listRegistrationIdParaRemover.add(registrationIdEnviado);
+			}
+		    } else {
+			boolean isTrocouRegistrationId = ModelUtils.isNotEmptyTrim(registration_id);
+			if (isTrocouRegistrationId) {
+			    String registrationIdEnviado = listRegistrationId.get(i);
+			    resposta.listAlteracoesRegistrationId.add(new AlteracaoRegistrationId(registrationIdEnviado, registration_id));
+			}
+		    }
+		}
+	    }
+	    
+	    return resposta;
+	} else {
+	    resposta.isErro = true;
+	    resposta.tipoErro = TipoErroCommons.ERRO_ACESSAR_WEBSERVICE;
+	    resposta.descricaoResposta = respostaAsString;
+	    return resposta;
+	}
+    }
+
     /*
      * https://developers.google.com/cloud-messaging/server-ref#table4
      * https://developers.google.com/cloud-messaging/http
